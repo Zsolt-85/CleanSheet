@@ -623,6 +623,7 @@ btnClean.addEventListener('click', async () => {
     statusEl.textContent = '';
     lastClean = c;
     renderClean(c);
+    loadCounter();
     setStep(4);
     resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (err) {
@@ -686,27 +687,33 @@ applyLang();
 
 // Public proof counter: always-real totals from /api/stats, framed as a live
 // beta count. Never inflated, never faked — small early numbers included.
-fetch('/api/stats')
-  .then((r) => r.json())
-  .then((s) => {
-    lastJobs = s.jobs_completed || 0;
-    lastToday = s.jobs_today || 0;
-    document.getElementById('counter').hidden = false;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      renderCounter();
-      return;
-    }
-    const start = performance.now(), dur = 1200;
-    const step = (now) => {
-      const p = Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - p, 3);
-      document.getElementById('counter-num').textContent = fmtNum(Math.round(lastJobs * eased));
-      if (p < 1) requestAnimationFrame(step);
-      else renderCounter();
-    };
-    requestAnimationFrame(step);
-  })
-  .catch(() => {});
+// Refreshes in place (no page reload): on load and after every cleaning.
+function loadCounter() {
+  fetch('/api/stats')
+    .then((r) => r.json())
+    .then((s) => {
+      const from = lastJobs;
+      lastJobs = s.jobs_completed || 0;
+      lastToday = s.jobs_today || 0;
+      document.getElementById('counter').hidden = false;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        renderCounter();
+        return;
+      }
+      const start = performance.now(), dur = 1200;
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const val = Math.round(from + (lastJobs - from) * eased);
+        document.getElementById('counter-num').textContent = fmtNum(val);
+        if (p < 1) requestAnimationFrame(step);
+        else renderCounter();
+      };
+      requestAnimationFrame(step);
+    })
+    .catch(() => {});
+}
+loadCounter();
 
 </script>
 </body>
