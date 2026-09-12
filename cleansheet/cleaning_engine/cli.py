@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -311,6 +312,46 @@ def modes() -> None:
 def version() -> None:
     """Show version information."""
     console.print(f"CleanSheet v{__version__}")
+
+
+@app.command()
+def stats(
+    db: Annotated[
+        Path | None,
+        typer.Option("--db", help="Stats database path (default: server's stats file)"),
+    ] = None,
+) -> None:
+    """Show the founder funnel: page views to analyzes to cleanings to downloads.
+
+    Reads the server's anonymous aggregate counters directly from disk - this
+    data is intentionally NOT exposed over HTTP.
+    """
+    from backend.stats import db_path, get_stats
+
+    if db is not None:
+        os.environ["CLEANSHEET_STATS_PATH"] = str(db)
+    s = get_stats()
+    table = Table(title="\nFounder funnel", show_header=True, header_style="bold")
+    table.add_column("Stage")
+    table.add_column("Count", justify="right")
+    table.add_column("Conversion", justify="right")
+    views, analyzes = s["page_views"], s["analyze_calls"]
+    jobs, downloads = s["jobs_completed"], s["download_hits"]
+    table.add_row("Page views", str(views), "-")
+    table.add_row("Analyze calls", str(analyzes), _pct(analyzes, views))
+    table.add_row("Completed cleanings", str(jobs), _pct(jobs, analyzes))
+    table.add_row("Download hits", str(downloads), f"{_pct(downloads, jobs)} (of cleanings)")
+    table.add_row("Rows in / out", f"{s['rows_in']} / {s['rows_out']}", "-")
+    table.add_row("Changes applied", str(s["changes_applied"]), "-")
+    table.add_row("Jobs today", str(s["jobs_today"]), "-")
+    console.print(table)
+    console.print(f"\n[dim]Source: {db_path()} (anonymous totals only)[/dim]")
+
+
+def _pct(part: int, whole: int) -> str:
+    if not whole:
+        return "-"  # plain ASCII: Windows consoles can't render em-dash
+    return f"{100 * part / whole:.1f}%"
 
 
 if __name__ == "__main__":

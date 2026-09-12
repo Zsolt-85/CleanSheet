@@ -41,7 +41,7 @@ from cleaning_engine.loader import (
     SUPPORTED_EXTENSIONS,
     SpreadsheetLoadError,
 )
-from backend.stats import get_stats, record_cleaning
+from backend.stats import get_stats, incr, record_cleaning
 from cleaning_engine.modes import build_pipeline, get_modes_content
 
 MAX_UPLOAD_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
@@ -159,6 +159,7 @@ async def analyze(file: UploadFile = File(...)) -> dict[str, Any]:
     issues = {k: v[:10] for k, v in analysis.issues.items()}
     issue_counts = {k: len(v) for k, v in analysis.issues.items()}
 
+    incr("analyze_calls")
     return {
         "filename": data.filename,
         "rows": prof.shape[0],
@@ -239,11 +240,16 @@ async def clean(
     }
 
 
+PUBLIC_STATS_KEYS = ("jobs_completed", "rows_in", "rows_out", "changes_applied", "jobs_today")
+
+
 @app.get("/api/stats")
 def stats() -> dict[str, Any]:
-    """Anonymous aggregate totals (jobs, rows, changes, jobs_today).
-    Displayed in the frontend as a live beta count — always real numbers."""
-    return get_stats()
+    """Public subset of the anonymous totals: what the frontend counter shows.
+    Funnel internals (page views, per-endpoint calls) are deliberately NOT
+    exposed over HTTP - founders read them via `cleansheet stats` instead."""
+    full = get_stats()
+    return {k: full[k] for k in PUBLIC_STATS_KEYS}
 
 
 @app.get("/api/download/{token}/{kind}")
@@ -259,6 +265,7 @@ def download(token: str, kind: str):  # type: ignore[no-untyped-def]
         raise HTTPException(status_code=404, detail="File no longer available.")
 
     filename = str(entry.get(f"{kind}_name", f"cleansheet_{kind}.xlsx"))
+    incr("download_hits")
     # Serve then delete this file; drop the token entry once both are gone
     response = FileResponse(
         path,
@@ -289,6 +296,7 @@ if STATIC_DIR.exists():
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
+    incr("page_views")
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return index_file.read_text(encoding="utf-8")

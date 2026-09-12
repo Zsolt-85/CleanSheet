@@ -227,6 +227,36 @@ class TestStats:
         resp = client.post("/api/clean", files={"file": ("messy.csv", messy_csv_bytes)})
         assert resp.status_code == 200
 
+    def test_funnel_counts_success_only(self, client: TestClient, messy_csv_bytes: bytes):
+        from backend.stats import get_stats
+
+        client.get("/")
+        client.post("/api/analyze", files={"file": ("m.csv", messy_csv_bytes)})
+        client.post("/api/analyze", files={"file": ("bad.txt", b"nope")})  # 400: not counted
+        s = get_stats()
+        assert s["page_views"] == 1
+        assert s["analyze_calls"] == 1
+
+    def test_downloads_counted_but_404s_not(self, client: TestClient, messy_csv_bytes: bytes):
+        from backend.stats import get_stats
+
+        resp = client.post("/api/clean", files={"file": ("m.csv", messy_csv_bytes)})
+        urls = resp.json()
+        client.get(urls["download_cleaned_url"])
+        client.get(urls["download_report_url"])
+        assert get_stats()["download_hits"] == 2
+        client.get(urls["download_cleaned_url"])  # gone: 404, not counted
+        assert get_stats()["download_hits"] == 2
+
+    def test_public_stats_hides_funnel(self, client: TestClient, messy_csv_bytes: bytes):
+        client.get("/")
+        client.post("/api/analyze", files={"file": ("m.csv", messy_csv_bytes)})
+        public = client.get("/api/stats").json()
+        assert "page_views" not in public
+        assert "analyze_calls" not in public
+        assert "download_hits" not in public
+        assert public["jobs_completed"] == 0  # no clean ran
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

@@ -71,7 +71,7 @@ strict = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["cleaning_engine*"]
+include = ["cleaning_engine*", "backend*"]
 
 [project.scripts]
 cleansheet = "cleaning_engine.cli:app"

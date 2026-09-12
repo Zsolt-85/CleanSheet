@@ -637,6 +637,19 @@ class TestCLI:
         assert result.exit_code == 0, result.output
         assert "modes" in result.output
 
+    def test_stats_command_shows_funnel(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        from typer.testing import CliRunner
+
+        from backend.stats import record_cleaning
+        from cleaning_engine.cli import app as cli_app
+
+        monkeypatch.setenv("CLEANSHEET_STATS_PATH", str(tmp_path / "s.db"))
+        record_cleaning(20, 12, 30)
+        result = CliRunner().invoke(cli_app, ["stats"])
+        assert result.exit_code == 0, result.output
+        assert "Completed cleanings" in result.output
+        assert "20 / 12" in result.output
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

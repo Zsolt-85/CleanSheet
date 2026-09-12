@@ -47,6 +47,19 @@ def _connect() -> sqlite3.Connection:
     return con
 
 
+def incr(name: str, by: int = 1) -> None:
+    """Increment a named funnel counter. Must never raise."""
+    try:
+        with _lock, _connect() as con:
+            con.execute(
+                "INSERT INTO counters(name, value) VALUES(?, ?) "
+                "ON CONFLICT(name) DO UPDATE SET value = counters.value + ?",
+                (name, int(by), int(by)),
+            )
+    except Exception:
+        pass
+
+
 def record_cleaning(rows_before: int, rows_after: int, changes_applied: int) -> None:
     """Add one completed cleaning job to the totals. Must never raise."""
     try:
@@ -74,7 +87,15 @@ def record_cleaning(rows_before: int, rows_after: int, changes_applied: int) -> 
 
 def get_stats() -> dict[str, int]:
     """Return current totals (zeros when nothing recorded yet)."""
-    totals = {"jobs_completed": 0, "rows_in": 0, "rows_out": 0, "changes_applied": 0}
+    totals = {
+        "jobs_completed": 0,
+        "rows_in": 0,
+        "rows_out": 0,
+        "changes_applied": 0,
+        "page_views": 0,
+        "analyze_calls": 0,
+        "download_hits": 0,
+    }
     jobs_today = 0
     try:
         today = datetime.date.today().isoformat()
