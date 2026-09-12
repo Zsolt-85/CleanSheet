@@ -1,0 +1,59 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.log
+tmp/
+temp/
+*.tmp
+
+# Test outputs (generated during test runs)
+tests/output/
+cleaning_engine/__pycache__/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database (if used later)
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads / temp files (runtime)
+uploads/
+processed/
+
+# Coverage reports
+.coverage.*
+coverage.xml

@@ -1,0 +1,1881 @@
+CleanSheet
+Master Business, Product, Marketing & Development Roadmap
+
+Project type: Bootstrapped micro-SaaS
+Initial product: Automated Excel/CSV data cleaning
+Development approach: VS Code + Kilo Code / agentic coding
+Initial objective: Build a reliable product capable of generating its first paying customers
+First major business target: €300 MRR
+Long-term objective: Build a low-maintenance recurring-income business and determine how far the opportunity can grow.
+1. Our Founder Philosophy
+
+CleanSheet is not being built with the assumption that it will become a huge startup.
+
+We are building a small, useful internet business.
+
+The initial objective is:
+
+    Build something people genuinely find useful, get strangers to pay for it, and gradually turn that into recurring, low-maintenance income.
+
+If the business eventually becomes much larger, excellent.
+
+If it reaches €300–€500/month and requires very little ongoing work, that is already a successful outcome.
+
+We will not confuse ambition with strategy.
+
+The business will be developed according to:
+
+Build → Measure → Learn → Improve → Monetize → Automate
+
+We will not spend months building features based purely on assumptions.
+2. The Core Business Hypothesis
+
+Our hypothesis is:
+
+    People and small businesses regularly receive messy Excel/CSV files and would pay for a simple tool that automatically identifies and fixes common data-quality problems.
+
+The problem already has monetary value because people currently spend their own time or pay freelancers/services to perform data-cleaning work.
+
+However:
+
+The existence of the problem does not prove that our particular product will succeed.
+
+Our job is to validate that.
+3. Initial Product
+
+The initial product should be extremely simple.
+
+A user visits CleanSheet and sees:
+
+    Clean your spreadsheet in seconds.
+
+    Remove duplicates, fix messy formatting, validate your data and standardize your Excel or CSV file automatically.
+
+    Upload your spreadsheet
+
+The basic workflow:
+
+User
+ ↓
+Uploads CSV/XLSX
+ ↓
+CleanSheet analyzes the file
+ ↓
+Problems are identified
+ ↓
+User reviews/selects cleaning operations
+ ↓
+Cleaning engine processes the file
+ ↓
+Cleaned file generated
+ ↓
+Change report generated
+ ↓
+User downloads results
+
+The user should understand the product within approximately five seconds.
+4. Initial Target Customer
+
+We will NOT initially try to serve everyone who uses spreadsheets.
+
+Our initial customer hypothesis is:
+Primary audience
+
+People and small businesses regularly handling customer/contact/lead data.
+
+Examples:
+
+    salespeople
+    marketing agencies
+    lead-generation companies
+    recruiters
+    real-estate professionals
+    virtual assistants
+    freelancers
+    small businesses
+    ecommerce operators
+
+The initial positioning should therefore lean toward:
+
+    Clean your customer or lead list.
+
+rather than generic:
+
+    AI-powered spreadsheet transformation platform.
+
+We can broaden the product later if the evidence supports it.
+5. Why This Customer
+
+Customer/lead spreadsheets frequently contain problems such as:
+
+John Smith
+john smith
+JOHN SMITH
+
+john@gmail.com
+john @gmail.com
+JOHN@GMAIL.COM
+
+Acme Ltd.
+ACME LTD
+Acme LTD.
+
+01/02/26
+2026-02-01
+February 1, 2026
+
+The customer may have to spend significant time fixing these problems before importing the data into another system.
+
+Our value proposition is:
+
+    "Don't learn how to clean the spreadsheet. Upload it and we'll show you what is wrong and fix it."
+
+The primary competitive advantage is therefore:
+
+Convenience + simplicity + transparency.
+
+Not merely "we use AI."
+6. Product Principles
+
+The product must prioritize:
+
+    Reliability.
+    Simplicity.
+    Transparency.
+    Low operating cost.
+    Privacy.
+    Fast processing.
+    Easy self-service.
+    Maintainable architecture.
+
+AI complexity is secondary.
+
+We should never use AI merely because we can.
+7. AI Philosophy
+
+The cleaning engine should primarily use deterministic algorithms.
+
+Do NOT send entire spreadsheets to an LLM and ask:
+
+    "Clean this spreadsheet."
+
+Instead:
+
+Spreadsheet
+    ↓
+Local profiler
+    ↓
+Deterministic rules
+    ↓
+Obvious problems fixed automatically
+    ↓
+Ambiguous problems identified
+    ↓
+AI used only where useful
+    ↓
+Confidence assessment
+    ↓
+User review where necessary
+
+8. Deterministic Cleaning
+
+Initial deterministic operations should include:
+
+    duplicate row detection
+    duplicate email detection
+    empty row detection
+    whitespace normalization
+    basic capitalization normalization
+    basic email validation
+    safe date normalization
+    basic value normalization
+    spreadsheet profiling
+
+These operations should be fast, cheap and predictable.
+9. AI Features — Later
+
+AI can eventually help with:
+
+    identifying the semantic meaning of columns
+    understanding unknown column names
+    fuzzy/semantic duplicate detection
+    category normalization
+    ambiguous text normalization
+    detecting relationships between columns
+    suggesting cleaning rules
+
+AI should be introduced only after the deterministic engine works reliably.
+10. Change Tracking
+
+Every automatic modification should be traceable.
+
+Example:
+
+Row: 82
+Column: Email
+
+Original:
+" john @gmail.com "
+
+New:
+"john@gmail.com"
+
+Reason:
+Whitespace normalization
+
+Rule:
+email_whitespace_cleanup
+
+The system should generate a structured change report.
+
+Potential downloadable output:
+
+cleaned_customers.xlsx
+cleaning_report.xlsx
+
+This is a major trust feature.
+
+Users need to know:
+
+    "What did your software actually change?"
+
+11. Confidence Levels
+
+Eventually, transformations can have confidence levels.
+High confidence
+
+Example:
+
+    Exact duplicate email — 99.9%
+
+Automatically fix.
+Medium confidence
+
+Example:
+
+    Possible duplicate company — 82%
+
+Ask the user or provide a review option.
+Low confidence
+
+Example:
+
+    Possible category correction — 51%
+
+Do not automatically modify.
+
+The system must avoid confidently corrupting customer data.
+12. Initial Technical Architecture
+
+Recommended stack:
+Frontend
+
+    Next.js
+    React
+    TypeScript
+    Tailwind CSS
+
+Backend
+
+    Python
+    FastAPI
+
+Data processing
+
+    pandas
+    openpyxl
+    RapidFuzz where appropriate
+
+Database
+
+None initially unless a concrete requirement appears.
+Authentication
+
+None initially.
+Persistent file storage
+
+None initially.
+
+Files should be processed temporarily and deleted after processing unless permanent storage becomes necessary.
+13. Conceptual Architecture
+
+                    FRONTEND
+                Next.js / React
+                       │
+                       │ HTTPS
+                       ▼
+                    BACKEND
+                  FastAPI
+                       │
+                       ▼
+              CLEANING ENGINE
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+     Loader         Analyzer       Cleaning
+                                      │
+                         ┌────────────┼────────────┐
+                         ▼            ▼            ▼
+                    Duplicates    Validation   Normalization
+                                      │
+                                      ▼
+                                  AI Layer
+                               when necessary
+                                      │
+                                      ▼
+                              Change Tracking
+                                      │
+                         ┌────────────┴────────────┐
+                         ▼                         ▼
+                  Cleaned File              Change Report
+                         │                         │
+                         └────────────┬────────────┘
+                                      ▼
+                                   DOWNLOAD
+
+14. Initial Repository Structure
+
+Conceptually:
+
+cleansheet/
+│
+├── frontend/
+│
+├── backend/
+│
+├── cleaning_engine/
+│
+├── tests/
+│
+├── docs/
+│
+├── README.md
+│
+└── .gitignore
+
+The exact structure can be adjusted after Kilo analyzes the project, but the core principle remains:
+
+The cleaning engine must be independent from the web application.
+15. Cleaning Engine Structure
+
+Conceptually:
+
+cleaning_engine/
+│
+├── loader.py
+├── profiler.py
+├── analyzer.py
+├── duplicates.py
+├── emails.py
+├── whitespace.py
+├── capitalization.py
+├── dates.py
+├── normalization.py
+├── change_tracker.py
+├── exporter.py
+└── pipeline.py
+
+The exact names are not sacred.
+
+The separation of responsibilities is.
+16. V1 Cleaning Engine
+
+The first local prototype must support:
+
+    Spreadsheet loading.
+    Spreadsheet profiling.
+    Empty-row detection.
+    Duplicate-row detection.
+    Duplicate-email detection.
+    Whitespace normalization.
+    Basic capitalization normalization.
+    Basic email validation.
+    Basic date normalization where safe.
+    Change tracking.
+    Cleaned spreadsheet export.
+    Cleaning report export.
+
+17. First Technical Milestone
+
+Before building the website:
+
+input.xlsx
+      ↓
+cleaning engine
+      ↓
+output.xlsx
+      ↓
+change_report.xlsx
+
+This should work locally.
+
+The goal is not beautiful UI.
+
+The goal is:
+
+    Can we reliably clean real spreadsheets without corrupting them?
+
+18. Testing Strategy
+
+Spreadsheet processing requires serious testing.
+
+We will create representative test files containing:
+
+    duplicate rows
+    duplicate emails
+    malformed emails
+    whitespace problems
+    inconsistent capitalization
+    empty rows
+    empty cells
+    multiple date formats
+    Unicode
+    Romanian characters
+    mixed data types
+    malformed files
+    unusual column names
+    large files
+    formula-containing spreadsheets
+    unusual strings
+
+The cleaning engine must never silently corrupt data.
+19. Golden Test Dataset
+
+Create a collection of approximately 20–50 representative spreadsheets.
+
+Every major change to the cleaning engine should run against these files.
+
+Conceptually:
+
+Input
+ ↓
+Cleaning engine
+ ↓
+Expected result
+
+This becomes our regression-testing system.
+
+As the product grows, this dataset becomes increasingly valuable.
+20. Security Requirements
+
+Uploaded files are untrusted input.
+
+The application should implement:
+
+    file type validation
+    file size limits
+    row limits
+    column limits
+    safe temporary file handling
+    automatic temporary-file deletion
+    safe error handling
+    rate limiting
+    no execution of uploaded content
+    minimal logging of user data
+    HTTPS in production
+
+Initial example limits might be:
+
+Maximum file size: 25 MB
+Maximum rows: 50,000
+Maximum columns: 200
+
+These are starting points, not permanent limits.
+21. Privacy Philosophy
+
+The ideal initial workflow is:
+
+Upload
+ ↓
+Temporary processing
+ ↓
+Generate output
+ ↓
+Download
+ ↓
+Delete temporary files
+
+We should avoid permanent storage unless a feature specifically requires it.
+
+We should make privacy claims only when the infrastructure actually supports them.
+22. MVP Website
+
+The initial website should contain approximately:
+Homepage
+
+Simple value proposition and upload button.
+Upload screen
+
+Drag-and-drop or browse.
+Analysis screen
+
+Show:
+
+Analyzing your spreadsheet...
+
+✓ Reading file
+✓ Detecting duplicates
+✓ Checking emails
+✓ Checking formatting
+✓ Detecting anomalies
+
+Results screen
+
+Example:
+
+4,823 rows analyzed
+
+218 duplicate rows
+31 invalid emails
+87 empty rows
+64 formatting inconsistencies
+
+[ Review changes ]
+[ Clean spreadsheet ]
+
+Download screen
+
+Example:
+
+Your spreadsheet is ready.
+
+Original: 4,823 rows
+Cleaned: 4,574 rows
+
+[ Download cleaned spreadsheet ]
+[ Download cleaning report ]
+
+23. What V1 Will NOT Include
+
+Do NOT build these initially:
+
+    mobile app
+    AI chat
+    user dashboard
+    complex authentication
+    team accounts
+    Google Drive integration
+    Dropbox integration
+    CRM integrations
+    API
+    automation workflows
+    enterprise features
+    complicated billing
+    Kubernetes
+    expensive infrastructure
+    unnecessary microservices
+
+These are future possibilities.
+
+They are not MVP requirements.
+24. Development Method With Kilo Code
+
+Kilo Code should be treated as an implementation accelerator, not as the architect of the entire company.
+
+Do not give Kilo:
+
+    "Build the entire SaaS."
+
+Instead:
+
+Plan
+ ↓
+Review
+ ↓
+Implement one milestone
+ ↓
+Test
+ ↓
+Review
+ ↓
+Commit
+ ↓
+Next milestone
+
+For each significant feature:
+
+    Ask Kilo to analyze.
+    Review the proposed implementation.
+    Let Kilo implement.
+    Run automated tests.
+    Manually test.
+    Review the changes.
+    Commit to Git.
+    Move to the next feature.
+
+25. Git Strategy
+
+Use Git from day one.
+
+Maintain a stable main branch.
+
+Use feature branches where appropriate.
+
+Examples:
+
+main
+
+feature/spreadsheet-loader
+feature/duplicate-detection
+feature/email-validation
+feature/change-tracking
+feature/upload
+feature/results-page
+
+Every major milestone should produce a recoverable commit.
+26. Marketing Is a Core Workstream
+
+Marketing will NOT begin after the product is finished.
+
+Marketing and product development run in parallel.
+
+The marketing workstreams are:
+
+    SEO.
+    Free tools.
+    Direct outreach.
+    Communities.
+    Educational content.
+    Conversion optimization.
+    Customer interviews.
+
+We will not blindly pursue all of them.
+
+We will measure which ones work.
+27. Market Reconnaissance
+
+Before serious development, investigate:
+Competitors
+
+What do existing spreadsheet/data-cleaning products offer?
+Search demand
+
+What do people search for?
+
+Examples:
+
+    remove duplicate rows Excel
+    clean Excel data
+    clean CSV
+    duplicate email checker
+    clean customer list
+    clean lead list
+    Excel data cleaning
+    CSV cleaner
+
+Customer language
+
+What words do real users use when describing their problem?
+Complaints
+
+What do existing tools fail to do?
+Pricing
+
+What are customers already paying for comparable solutions?
+
+The objective is not to copy competitors.
+
+The objective is to understand the market.
+28. Initial Marketing Positioning
+
+Avoid:
+
+    Revolutionary AI-powered data transformation platform.
+
+Prefer:
+
+    Clean your customer list in seconds.
+
+Then:
+
+    Upload your Excel or CSV file. Clean duplicates, invalid emails, inconsistent formatting and messy data automatically.
+
+The product should immediately communicate:
+
+Input → Problem → Result.
+29. SEO Strategy
+
+SEO is especially important because our long-term goal is low-maintenance income.
+
+Potential pages:
+
+/remove-duplicate-excel-rows
+/excel-duplicate-checker
+/clean-csv
+/clean-excel-data
+/remove-duplicate-emails
+/clean-customer-list
+/clean-lead-list
+/excel-data-cleaning
+
+Each page should genuinely solve the user's problem.
+
+The strategy is:
+
+Search
+ ↓
+Useful answer/tool
+ ↓
+User encounters CleanSheet
+ ↓
+Upload
+ ↓
+Value
+ ↓
+Potential customer
+
+We will not rely on generic AI-generated SEO spam.
+30. Free Tools Strategy
+
+Potential free tools:
+
+    Excel duplicate checker
+    CSV duplicate checker
+    email validator
+    CSV cleaner
+    Excel whitespace cleaner
+    spreadsheet data profiler
+    CSV column comparer
+
+The free tools should provide genuine value.
+
+The conversion opportunity is:
+
+    "You found the problem. Let CleanSheet fix it."
+
+31. Direct Outreach
+
+Before SEO produces meaningful traffic, direct outreach can provide the first users.
+
+Potential targets:
+
+    recruiters
+    agencies
+    sales professionals
+    real estate businesses
+    VAs
+    ecommerce operators
+    small businesses
+
+Initial outreach should not feel like spam.
+
+Example strategy:
+
+    I'm building a small tool that automatically cleans messy Excel/CSV contact lists. I'm looking for a few businesses to test it with. If you have an annoying spreadsheet, I'd be happy to process one for free.
+
+The purpose of early outreach is:
+
+learning first, selling second.
+32. Customer Discovery
+
+Each early tester should help us answer:
+Problem
+
+What were you trying to accomplish?
+Current solution
+
+How do you currently solve it?
+Time
+
+How long does it take?
+Pain
+
+What is the most annoying part?
+Product
+
+What did CleanSheet get wrong?
+Product
+
+What did you wish it could do?
+Value
+
+How much time did it save?
+Payment
+
+Would you pay for this?
+Pricing
+
+What would feel reasonable?
+33. The Most Important Early Metric
+
+Not visitors.
+
+Not AI requests.
+
+Not downloads.
+
+The most important behavioral metric is:
+Repeat Cleaning Rate
+
+We want to know:
+
+    Do people come back with another spreadsheet?
+
+A one-time user indicates utility.
+
+A returning user indicates potential recurring value.
+34. Core Funnel
+
+Eventually measure:
+
+Visitors
+   ↓
+Upload
+   ↓
+Successful processing
+   ↓
+Download
+   ↓
+Return
+   ↓
+Pay
+   ↓
+Continue paying
+
+Example:
+
+1,000 visitors
+ ↓
+300 uploads
+ ↓
+270 successful processing
+ ↓
+230 downloads
+ ↓
+80 return
+ ↓
+20 pay
+
+The exact numbers don't matter initially.
+
+The funnel structure does.
+35. Marketing Decision Rules
+If people don't visit:
+
+Marketing/distribution problem.
+If people visit but don't upload:
+
+Landing-page/value-proposition problem.
+If people upload but don't finish:
+
+Product/reliability/UX problem.
+If people finish but don't return:
+
+Potentially a one-time problem.
+
+Find recurring use cases.
+If people return but don't pay:
+
+Pricing/value proposition problem.
+If people pay and return:
+
+Double down.
+36. Niche Discovery
+
+We should NOT assume our final niche now.
+
+We observe who actually uses the product.
+
+Example:
+
+Recruiters       35%
+Agencies         30%
+Sales            20%
+Ecommerce        10%
+Other             5%
+
+If recruiters repeatedly use it and pay more:
+
+    Build for recruiters.
+
+If agencies are the strongest:
+
+    Build for agencies.
+
+The market will tell us where the strongest opportunity is.
+37. Monetization Strategy
+
+Initial monetization should be simple.
+
+Potential model:
+Free
+
+Small files / limited monthly usage.
+One-time cleaning
+
+Approximately €5 as an initial hypothesis.
+Starter
+
+Approximately €9/month.
+Pro
+
+Approximately €19/month.
+
+These are testing prices, not final prices.
+
+We will adjust them according to actual customer behavior.
+38. Why Offer One-Time Payments
+
+Some users may say:
+
+    "I only need this once."
+
+Instead of losing them completely, we can offer a one-time cleaning option.
+
+This also gives us an opportunity to learn:
+
+    Do people prefer purchasing a result or subscribing to a tool?
+
+39. First Revenue Milestones
+
+Our milestone ladder:
+
+€0
+ ↓
+First user
+ ↓
+First €5
+ ↓
+€50 MRR
+ ↓
+€100 MRR
+ ↓
+★ €300 MRR ★
+ ↓
+€500 MRR
+ ↓
+★ €1,000 MRR ★
+
+The first major target is:
+€300 MRR
+
+Not because €300 is magical.
+
+Because it proves strangers are repeatedly exchanging money for our product.
+40. The €300 MRR Model
+
+Possible scenario:
+
+30 customers × €10/month
+= €300 MRR
+
+Or:
+
+15 customers × €20/month
+= €300 MRR
+
+We don't need thousands of customers.
+
+We need to find a small group with a sufficiently painful problem.
+41. The Meaning of €300 MRR
+
+At €300 MRR, we should NOT immediately start adding dozens of features.
+
+We ask:
+
+    Who is paying?
+
+    Why are they paying?
+
+    How often do they use the product?
+
+    What problem are they really solving?
+
+    What do they want next?
+
+    How much manual work does the product currently require?
+
+That information determines the next stage.
+42. The Passive-Income Objective
+
+We should define "passive" realistically.
+
+SaaS will never be perfectly passive.
+
+There will always be:
+
+    maintenance
+    occasional bugs
+    infrastructure
+    customer support
+    payment issues
+    security updates
+    dependency updates
+
+Our goal is:
+Low-maintenance recurring income.
+
+The ideal system becomes:
+
+Customer discovers site
+ ↓
+Signs up / uploads
+ ↓
+Product processes automatically
+ ↓
+Payment happens automatically
+ ↓
+Customer gets result
+ ↓
+Customer returns
+ ↓
+Support is mostly self-service
+ ↓
+Monitoring detects problems
+ ↓
+We perform occasional maintenance
+
+The objective is eventually to make the business require very little of our time relative to the revenue it produces.
+43. The First Major Product Expansion
+
+Once repeat usage is demonstrated:
+Saved Cleaning Recipes
+
+Example:
+
+Monday Leads
+
+✓ Remove duplicates
+✓ Normalize company names
+✓ Validate emails
+✓ Normalize dates
+✓ Standardize categories
+
+Next week:
+
+Upload file
+
+[ Run "Monday Leads" ]
+
+This creates recurring value.
+44. Second Expansion
+Batch Processing
+
+Allow users to upload:
+
+January.xlsx
+February.xlsx
+March.xlsx
+April.xlsx
+
+and process all files using the same rules.
+
+This naturally supports higher pricing.
+45. Third Expansion
+Google Sheets / cloud storage
+
+Potential future workflow:
+
+New spreadsheet
+ ↓
+Clean automatically
+ ↓
+Save cleaned version
+ ↓
+Notify user
+
+Only build this when customers demonstrate demand.
+46. Fourth Expansion
+Business integrations
+
+Potential integrations:
+
+    Google Drive
+    Dropbox
+    OneDrive
+    HubSpot
+    Salesforce
+    Shopify
+    Airtable
+
+Again:
+
+Customer request first. Development second.
+47. Fifth Expansion
+API
+
+Eventually:
+
+Business software
+       ↓
+CleanSheet API
+       ↓
+Data cleaning
+       ↓
+Cleaned data
+       ↓
+Business software
+
+This could transform the product from a file utility into a data-processing infrastructure product.
+48. Potential Long-Term Evolution
+
+The business could evolve:
+
+Spreadsheet Cleaner
+        ↓
+Data Cleaner
+        ↓
+Data Normalization
+        ↓
+Saved Workflows
+        ↓
+Industry-Specific Cleaning
+        ↓
+Data Automation
+        ↓
+API / Integrations
+
+But none of this is guaranteed.
+
+We earn the right to build it by validating the previous stage.
+49. Possible Long-Term Positioning
+
+If the market supports it, the eventual product could become:
+
+    AI Data Janitor for Small Businesses
+
+Instead of caring about spreadsheets specifically, the customer cares about:
+
+    "My business data is messy. Make it usable."
+
+Potential inputs:
+
+    Excel
+    CSV
+    Google Sheets
+    CRM exports
+    supplier files
+    ecommerce exports
+    other structured business data
+
+Potential outputs:
+
+    cleaned data
+    standardized data
+    CRM-ready data
+    deduplicated data
+    validated data
+
+This is a possible long-term direction, not the initial product.
+50. Service-to-Software Opportunity
+
+If the automated product encounters complicated files that it cannot safely handle, we can potentially offer:
+
+    Professional data cleaning
+
+For example:
+
+Automatic cleaning
+       ↓
+Simple files → automated product
+       ↓
+Complex files → paid manual/service option
+
+This can potentially generate early revenue while simultaneously teaching us what additional automation customers need.
+
+This is optional and should only be pursued if demand appears.
+51. Marketing Channels We Will Prioritize
+
+Priority order:
+1. Direct outreach
+
+For immediate learning and first users.
+2. SEO
+
+For long-term low-maintenance acquisition.
+3. Free tools
+
+For search traffic and conversion.
+4. Communities
+
+For organic discovery and problem research.
+5. Educational content
+
+Tutorials around real spreadsheet problems.
+
+Paid advertising should come much later.
+52. What We Will NOT Spend Money On Initially
+
+Avoid unnecessary expenses:
+
+    expensive hosting
+    paid advertising
+    enterprise infrastructure
+    unnecessary SaaS subscriptions
+    complicated analytics
+    excessive AI API usage
+    expensive branding
+    expensive design agencies
+    premature integrations
+
+The first objective is proving demand.
+53. AI Cost Control
+
+Never send entire large spreadsheets to an LLM unless absolutely necessary.
+
+Instead:
+
+Full spreadsheet
+ ↓
+Local analysis
+ ↓
+Identify ambiguous data
+ ↓
+Extract relevant samples
+ ↓
+AI analysis
+ ↓
+Return structured instruction
+ ↓
+Apply changes locally
+
+This keeps costs low.
+54. Business Metrics
+
+Maintain a simple founder dashboard:
+
+Visitors:
+Uploads:
+Successful cleanings:
+Downloads:
+Returning users:
+Paying users:
+MRR:
+Revenue:
+Infrastructure cost:
+AI cost:
+Support requests:
+
+Later:
+
+Customer acquisition source
+Conversion rate
+Retention
+Churn
+Average revenue per customer
+Cost per acquisition
+
+Do not obsess over metrics before we have meaningful traffic.
+55. 30-Day Development Roadmap
+Week 1 — Cleaning Engine
+
+Goal:
+
+    Reliable local spreadsheet cleaning.
+
+Tasks:
+
+    project setup
+    spreadsheet loading
+    profiling
+    duplicate detection
+    basic cleaning
+    change tracking
+    export
+    tests
+
+Week 2 — Web MVP
+
+Goal:
+
+    A stranger can use the product from a browser.
+
+Tasks:
+
+    frontend
+    upload interface
+    FastAPI backend
+    processing pipeline
+    analysis results
+    cleaning controls
+    download
+    error handling
+
+Week 3 — Private Beta
+
+Goal:
+
+    10–20 real people use it.
+
+Tasks:
+
+    recruit testers
+    process real files
+    observe failures
+    collect feedback
+    identify recurring use cases
+    improve cleaning accuracy
+
+Week 4 — Monetization
+
+If beta feedback supports it:
+
+    pricing
+    free limits
+    one-time payment
+    subscription
+    privacy policy
+    terms
+    basic analytics
+    production hardening
+
+Goal:
+First paying customer.
+56. 90-Day Business Roadmap
+Month 1
+Objective
+
+Working MVP + real users.
+
+Target:
+
+    working product
+    10–20 testers
+    first payment if possible
+
+Month 2
+Objective
+
+Retention.
+
+Potential improvements:
+
+    better duplicate detection
+    better validation
+    AI column recognition
+    saved cleaning configurations
+    batch processing
+    improved reports
+
+Target:
+
+    repeat users
+    multiple paying customers
+
+Month 3
+Objective
+
+Niche discovery + repeatable acquisition.
+
+Analyze:
+
+    who uses the product
+    who pays
+    who returns
+    which problems are most valuable
+    which marketing channel works
+
+Target:
+€100–€300 MRR
+
+€300 is ambitious but realistic enough to use as a first major target.
+57. 6-Month Direction
+
+If the first three months validate the business:
+
+Month 1
+MVP
+
+Month 2
+Reliability + retention
+
+Month 3
+Niche discovery
+
+Month 4
+Saved workflows
+
+Month 5
+Automation / integrations
+
+Month 6
+Scale the acquisition channel that works
+
+The exact roadmap after Month 3 will be determined by customer evidence.
+58. Six-Month Decision Point
+
+At approximately six months, evaluate honestly.
+Scenario A — Nobody pays
+
+Stop or pivot.
+Scenario B — Small number of customers pay
+
+Keep it as a micro-SaaS and improve gradually.
+Scenario C — €300+ MRR
+
+Strong validation.
+
+Optimize retention and reduce maintenance.
+Scenario D — €1,000+ MRR
+
+Potentially significant micro-SaaS opportunity.
+
+Consider specializing.
+Scenario E — Strong growth and obvious demand
+
+Consider turning it into a larger data-automation company.
+59. Our "Kill / Continue / Double Down" Framework
+
+Every approximately 30 days:
+CONTINUE
+
+People use it and some pay.
+
+→ Continue improving.
+DOUBLE DOWN
+
+A particular customer segment strongly prefers it.
+
+→ Focus heavily on that niche.
+PIVOT
+
+The problem exists but our solution isn't attractive.
+
+→ Change the product or positioning.
+KILL
+
+Nobody cares enough to use or pay.
+
+→ Stop spending time and move to another opportunity.
+
+We are not emotionally attached to the original idea.
+60. Competitive Strategy
+
+We do not need to beat:
+
+    Microsoft Excel
+    Google Sheets
+    OpenRefine
+    enterprise data platforms
+    every AI spreadsheet product
+
+We need to win a narrower use case through:
+
+Simplicity + convenience + reliability + transparency.
+
+Our customer should think:
+
+    "I don't want to learn another spreadsheet tool. I just want this file cleaned."
+
+61. Potential Moat
+
+The initial moat is weak.
+
+That's okay.
+
+Initial advantage:
+
+    Convenience.
+
+Later advantages could become:
+
+    customer-specific cleaning recipes
+    workflow history
+    industry-specific rules
+    integrations
+    accumulated cleaning patterns
+    automation
+    API
+    trust/reputation
+    specialized workflows
+
+We should not pretend that "AI" itself is a moat.
+62. Main Business Risks
+Risk 1 — People don't pay
+
+Solution:
+
+Validate early.
+Risk 2 — Free competitors are good enough
+
+Solution:
+
+Focus on convenience and specific workflows.
+Risk 3 — AI makes mistakes
+
+Solution:
+
+Deterministic processing + confidence + change reports.
+Risk 4 — Privacy concerns
+
+Solution:
+
+Minimal storage + secure processing + transparent policies.
+Risk 5 — One-time usage
+
+Solution:
+
+Saved recipes, recurring workflows and niche specialization.
+Risk 6 — Competition
+
+Solution:
+
+Find a niche and build workflow depth.
+63. What Success Looks Like
+
+Success does NOT initially mean:
+
+    huge traffic
+    viral growth
+    investors
+    millions of users
+    press coverage
+
+Success means:
+
+A stranger has a problem
+        ↓
+Finds CleanSheet
+        ↓
+Uses it
+        ↓
+Gets useful result
+        ↓
+Returns later
+        ↓
+Pays
+        ↓
+Continues paying
+
+That is the business.
+64. Our First 10 Customer Strategy
+
+We should personally find the first users.
+
+Potential approach:
+
+Find 50 relevant people/businesses
+        ↓
+Contact them personally
+        ↓
+Offer free testing
+        ↓
+Get real spreadsheets
+        ↓
+Observe problems
+        ↓
+Improve product
+        ↓
+Ask if they'd pay
+        ↓
+Convert first customers
+
+The first customers are also our research team.
+65. Our First Major Business Target
+€300 MRR
+
+Possible path:
+
+5 customers
+ ↓
+€50 MRR
+
+10 customers
+ ↓
+€100 MRR
+
+20 customers
+ ↓
+€200 MRR
+
+30 customers
+ ↓
+€300 MRR
+
+The actual number of customers depends on pricing.
+
+The goal is not to force exactly 30 customers.
+
+The goal is to prove recurring revenue.
+66. Our First Customer's Experience
+
+The ideal first experience:
+
+Google/search/outreach
+        ↓
+"Clean your customer list"
+        ↓
+Landing page
+        ↓
+Upload
+        ↓
+"Found 217 problems"
+        ↓
+Review
+        ↓
+Clean
+        ↓
+Download
+        ↓
+"Oh, this actually works."
+        ↓
+Next spreadsheet
+        ↓
+"Can I use this again?"
+
+That last step is extremely important.
+67. Long-Term Passive-Income Design
+
+As revenue grows, we should continuously remove manual work.
+Automate:
+
+    payment
+    onboarding
+    file processing
+    emails
+    deletion
+    usage limits
+    billing
+    error monitoring
+    common support questions
+
+Minimize:
+
+    manual file processing
+    manual customer support
+    manual billing
+    manual onboarding
+
+Eventually the founder's role should become:
+
+Monitor
+ ↓
+Improve
+ ↓
+Market
+ ↓
+Occasional support
+
+rather than:
+
+Process every customer's spreadsheet manually.
+
+68. Founder Roles
+You
+
+Responsible for:
+
+    final business decisions
+    customer conversations
+    market feedback
+    marketing execution
+    product direction
+    deciding priorities
+
+Me
+
+I act as your strategic/product/technical copilot for:
+
+    architecture
+    product planning
+    coding-task design
+    debugging
+    technical decisions
+    marketing strategy
+    SEO strategy
+    copywriting
+    pricing experiments
+    customer research
+    analyzing metrics
+    deciding what to build next
+
+Kilo Code
+
+Acts as our implementation accelerator:
+
+    code
+    refactoring
+    tests
+    documentation
+    repetitive implementation
+    debugging assistance
+
+We remain responsible for deciding what should be built and why.
+69. How We Work Together
+
+For every significant decision:
+
+Problem
+ ↓
+Options
+ ↓
+Recommendation
+ ↓
+Implementation
+ ↓
+Test
+ ↓
+Measure
+
+We do not blindly accept generated code.
+
+We do not blindly follow our original plan either.
+
+The plan is our foundation.
+
+Customer evidence can change the building.
+70. The One Rule That Overrides Everything
+
+This is the most important rule in the entire roadmap:
+Do not build something just because it sounds cool.
+
+Build it because:
+
+    a user needs it
+    it improves conversion
+    it improves retention
+    it reduces operating cost
+    it improves reliability
+    or it directly helps revenue.
+
+71. First Task When Development Begins
+
+Create the project repository.
+
+Then give Kilo the following instruction:
+
+    Analyze the CleanSheet Master Roadmap and the current repository.
+
+    Do not modify files.
+
+    We are beginning Phase 1: the spreadsheet cleaning engine.
+
+    Produce:
+
+        Proposed architecture.
+        Folder structure.
+        Required dependencies.
+        Cleaning-engine design.
+        Testing strategy.
+        Security considerations.
+        Development milestones.
+        Technical risks.
+
+    The first implementation milestone is a local Python program capable of:
+
+    input.xlsx → cleaning engine → output.xlsx + change_report.xlsx
+
+    Do not build the frontend, authentication, payments, database, AI layer, integrations or deployment yet.
+
+    Do not modify any files until the architecture has been reviewed and approved.
+
+Then bring Kilo's response back for review.
+72. Phase 1 Completion Criteria
+
+We do not move to the web application until:
+
+    the engine loads CSV/XLSX reliably
+    cleaning rules work
+    changes are tracked
+    exports work
+    automated tests pass
+    representative messy files work
+    malformed files fail safely
+    no obvious data corruption occurs
+
+73. Phase 2 Completion Criteria
+
+We do not call the MVP complete until a stranger can:
+
+Visit site
+ ↓
+Upload spreadsheet
+ ↓
+Analyze
+ ↓
+Select cleaning
+ ↓
+Process
+ ↓
+Download
+ ↓
+Open result successfully
+
+without our assistance.
+74. Phase 3 Completion Criteria
+
+We do not call the business validated until:
+
+    real users have used it
+    we understand what they use it for
+    some users return
+    at least some users are willing to pay
+
+75. Phase 4 Completion Criteria
+
+We consider the first business milestone validated when:
+CleanSheet reaches approximately €300 MRR.
+
+At that point we decide whether to:
+
+    keep it as a low-maintenance micro-SaaS
+    push toward €500–€1,000+
+    specialize into a profitable niche
+    build automation
+    expand into data workflows
+    or pursue another opportunity
+
+76. Final Strategy
+
+The complete strategy is:
+
+                 MARKET RESEARCH
+                       ↓
+                CLEANING ENGINE
+                       ↓
+                    MVP
+                       ↓
+                REAL CUSTOMERS
+                       ↓
+               CUSTOMER FEEDBACK
+                       ↓
+                FIRST PAYMENT
+                       ↓
+                REPEAT USAGE
+                       ↓
+                  €50 MRR
+                       ↓
+                 €100 MRR
+                       ↓
+                 €300 MRR
+                       ↓
+               FIND BEST NICHE
+                       ↓
+              SAVED WORKFLOWS
+                       ↓
+                  AUTOMATION
+                       ↓
+                INTEGRATIONS
+                       ↓
+                     API
+                       ↓
+             LOW-MAINTENANCE SaaS
+
+We do not skip stages.
+
+We do not assume the later stages will happen.
+
+We earn each stage through evidence.
+77. The Ultimate Objective
+
+We are building this because we want a realistic path toward:
+
+    A small, legitimate, recurring source of online income that can help pay bills without requiring us to continuously trade hours for money.
+
+The first goal is not €10,000/month.
+
+The first goal is:
+One stranger pays.
+
+Then:
+Ten strangers pay.
+
+Then:
+€100/month.
+
+Then:
+€300/month.
+
+And once we reach that point, we use the evidence we've collected to decide how far we want to take it.
+
+That is the CleanSheet strategy.

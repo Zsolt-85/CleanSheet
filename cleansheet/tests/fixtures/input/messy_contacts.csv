@@ -1,0 +1,21 @@
+First Name,Last Name,Email,Company,Phone,Date,Status
+John,Smith,john@gmail.com,Acme Ltd.,555-1234,2026-01-15,Active
+john,smith,john@gmail.com,ACME LTD,555-1234,01/15/2026,Active
+JOHN,SMITH,JOHN@GMAIL.COM,Acme LTD.,555-1234,"January 15, 2026",Active
+Jane,Doe,jane@yahoo.com,Globex Corp,555-5678,2026-02-20,Inactive
+Jane,Doe,jane@yahoo.com,Globex Corp,555-5678,2026-02-20,Inactive
+Bob,Wilson,bob@hotmail.com,Wayne Enterprises,555-9012,2026-03-10,Pending
+Bob,Wilson,bob@hotmail.com,Wayne Enterprises,555-9012,2026-03-10,Pending
+Alice,Brown,alice@outlook.com,Stark Industries,555-3456,2026-04-05,Active
+Alice,Brown,"alice @outlook.com ",Stark Industries,555-3456,04/05/2026,Active
+Charlie,Davis,charlie@company.com,Umbrella Corp,555-7890,2026-05-12,Active
+,,,,,,
+David,Lee,david@invalid,Oscorp,555-1111,2026-06-18,Active
+Eve,White,eve@protonmail.com,Tyrell Corp,555-2222,2026-07-25,Inactive
+Eve,White,eve@protonmail.com,Tyrell Corp,555-2222,2026-07-25,Inactive
+Frank,Green,frank@aol.com,Massive Dynamic,555-3333,2026-08-30,Pending
+Grace,Hall,grace@icloud.com,Weyland-Yutani,555-4444,2026-09-14,Active
+Grace,Hall,GRACE@ICLOUD.COM,Weyland-Yutani,555-4444,09/14/2026,Active
+Henry,King,henry@gmial.com,Initech,555-5555,2026-10-01,Active
+Ivy,Scott,ivy@yaho.com,Hooli,555-6666,2026-11-11,Inactive
+Jack,Adams,jack@hotmial.com,Pied Piper,555-7777,2026-12-25,Active

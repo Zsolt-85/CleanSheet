@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CleanSheet — Privacy Policy</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 20px 64px; color: #0f1e33; line-height: 1.6; }
+  .lang { text-align: right; margin-bottom: 8px; }
+  .lang button { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 700; }
+  .lang button.on { background: #2563eb; color: #fff; border-color: #2563eb; }
+  h1 { letter-spacing: -0.02em; }
+  a { color: #2563eb; }
+  .back { display: inline-block; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="lang">
+  <button id="btn-en" class="on">EN</button>
+  <button id="btn-ro">RO</button>
+</div>
+<a class="back" href="/">← CleanSheet</a>
+<div id="en">
+<h1>Privacy Policy</h1>
+<p><small>Last updated: September 2026. CleanSheet is currently in private beta.</small></p>
+<h2>What we process</h2>
+<p>When you upload a spreadsheet, our server reads it in memory, cleans it, and generates a cleaned file plus a change report for you to download. That is the entire processing.</p>
+<h2>What we do NOT do</h2>
+<ul>
+  <li><strong>No storage.</strong> Uploaded files and results live only in temporary server storage. Each result file is deleted immediately after you download it; anything left behind expires automatically after 30 minutes.</li>
+  <li><strong>No accounts, no tracking, no analytics cookies.</strong> Your browser stores one thing locally on your device: your language choice (English/Romanian). Nothing else.</li>
+  <li><strong>No sharing.</strong> Your files are never sold, shared, or used to train models. There is no AI in the cleaning engine — only deterministic rules running on our server.</li>
+</ul>
+<h2>Your responsibility</h2>
+<p>Only upload spreadsheets you have the right to process. If your files contain other people's personal data (e.g. customer lists), you are responsible for having a lawful basis to process it.</p>
+<h2>Data requests</h2>
+<p>Because nothing is stored, there is generally nothing to export or delete — files disappear on their own. If you believe something of yours was retained by mistake, contact us through the channel by which you received your beta invite and we will investigate.</p>
+</div>
+<div id="ro" hidden>
+<h1>Politica de confidențialitate</h1>
+<p><small>Ultima actualizare: septembrie 2026. CleanSheet este în beta privat.</small></p>
+<h2>Ce procesăm</h2>
+<p>Când încărcați un tabel, serverul nostru îl citește în memorie, îl curăță și generează fișierul curățat plus raportul de modificări, pentru descărcare. Aceasta este întreaga procesare.</p>
+<h2>Ce NU facem</h2>
+<ul>
+  <li><strong>Fără stocare.</strong> Fișierele încărcate și rezultatele există doar în spațiul temporar al serverului. Fiecare fișier rezultat este șters imediat după descărcare; ce rămâne expiră automat după 30 de minute.</li>
+  <li><strong>Fără conturi, fără urmărire, fără cookie-uri de analiză.</strong> Browserul dvs. păstrează local, pe dispozitiv, un singur lucru: alegerea limbii (engleză/română). Nimic altceva.</li>
+  <li><strong>Fără partajare.</strong> Fișierele nu sunt vândute, partajate sau folosite pentru antrenarea de modele. Motorul de curățare nu conține AI — doar reguli deterministe care rulează pe serverul nostru.</li>
+</ul>
+<h2>Responsabilitatea dvs.</h2>
+<p>Încărcați doar tabele pe care aveți dreptul să le procesați. Dacă fișierele conțin datele personale ale altor persoane (ex. liste de clienți), sunteți responsabil să aveți un temei legal pentru procesare.</p>
+<h2>Solicitări privind datele</h2>
+<p>Pentru că nu se stochează nimic, în general nu există nimic de exportat sau șters — fișierele dispar singure. Dacă credeți că ceva a fost păstrat din greșeală, contactați-ne prin canalul prin care ați primit invitația beta și vom investiga.</p>
+</div>
+<script>
+const en = document.getElementById('en'), ro = document.getElementById('ro');
+const bEn = document.getElementById('btn-en'), bRo = document.getElementById('btn-ro');
+function pick(lang) {
+  const isRo = lang === 'ro';
+  en.hidden = isRo; ro.hidden = !isRo;
+  bEn.classList.toggle('on', !isRo); bRo.classList.toggle('on', isRo);
+  document.documentElement.lang = lang;
+  try { localStorage.setItem('cleansheet-lang', lang); } catch (e) {}
+}
+bEn.addEventListener('click', () => pick('en'));
+bRo.addEventListener('click', () => pick('ro'));
+try { if (localStorage.getItem('cleansheet-lang') === 'ro') pick('ro'); } catch (e) {}
+</script>
+</body>
+</html>

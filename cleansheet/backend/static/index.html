@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CleanSheet — clean your customer list in seconds. Remove duplicates, fix formatting, validate emails. Every change logged.">
+<title>CleanSheet — Clean your customer list in seconds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f8fc;
+    --card: #ffffff;
+    --ink: #0f1e33;
+    --muted: #5b6b82;
+    --line: #e4eaf3;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --brand-soft: #e8effe;
+    --ok: #059669;
+    --ok-soft: #e6f6f0;
+    --warn: #b45309;
+    --err: #dc2626;
+    --err-soft: #fdecec;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(15, 30, 51, 0.08);
+    --shadow-sm: 0 2px 8px rgba(15, 30, 51, 0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 400px at 50% -80px, #dbe7ff 0%, var(--bg) 60%) fixed, var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px 64px; }
+
+  /* ---------- header ---------- */
+  header.top { display: flex; align-items: center; gap: 10px; padding: 22px 0 6px; }
+  .logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--brand), #7c3aed);
+    display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); }
+  .brand { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .brand small { display: block; font-weight: 500; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+  .langswitch { margin-left: auto; display: flex; background: #fff; border: 1px solid var(--line); border-radius: 999px;
+    padding: 3px; box-shadow: var(--shadow-sm); }
+  .langswitch button { border: 0; background: none; border-radius: 999px; padding: 6px 14px; font-weight: 700;
+    font-size: 0.82rem; cursor: pointer; color: var(--muted); font-family: inherit; transition: all 0.2s; }
+  .langswitch button.on { background: var(--ink); color: #fff; }
+
+  /* ---------- hero ---------- */
+  .hero { text-align: center; padding: 30px 0 8px; }
+  .hero h1 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); line-height: 1.12; letter-spacing: -0.03em; margin: 0 0 12px; }
+  .hero h1 .accent { background: linear-gradient(90deg, var(--brand), #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--muted); font-size: 1.06rem; max-width: 620px; margin: 0 auto; }
+  .pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .pill { font-size: 0.8rem; font-weight: 600; color: #33415c; background: #fff; border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 12px; box-shadow: var(--shadow-sm); }
+
+  /* ---------- app card ---------- */
+  .app { background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow);
+    margin-top: 26px; overflow: hidden; }
+  .steps { display: flex; background: #fbfcff; border-bottom: 1px solid var(--line); }
+  .step { flex: 1; padding: 14px 6px; text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--muted);
+    position: relative; transition: color 0.25s; }
+  .step .n { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #e6ebf4; color: #66788f;
+    align-items: center; justify-content: center; font-size: 0.72rem; margin-right: 6px; transition: all 0.25s; }
+  .step.active { color: var(--brand-dark); }
+  .step.active .n { background: var(--brand); color: #fff; }
+  .step.done { color: var(--ok); }
+  .step.done .n { background: var(--ok); color: #fff; }
+  .body { padding: 26px clamp(18px, 4vw, 34px) 30px; }
+
+  /* ---------- dropzone ---------- */
+  #drop { border: 2px dashed #b9c6dd; border-radius: var(--radius); padding: 34px 20px; text-align: center;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; background: #fbfcff; }
+  #drop:hover { border-color: var(--brand); }
+  #drop.over { border-color: var(--brand); background: var(--brand-soft); transform: scale(1.01); }
+  #drop input { display: none; }
+  #drop .icon { width: 44px; height: 44px; margin: 0 auto 10px; border-radius: 12px; background: var(--brand-soft);
+    display: flex; align-items: center; justify-content: center; }
+  #drop-label { font-weight: 600; }
+  #drop-hint { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+  .filechip { display: none; align-items: center; gap: 10px; margin-top: 14px; background: var(--ok-soft);
+    border: 1px solid #bfe6d6; border-radius: 12px; padding: 10px 14px; font-size: 0.9rem; }
+  .filechip.show { display: flex; animation: rise 0.3s ease; }
+  .filechip b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .filechip button { margin-left: auto; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 1rem; }
+
+  /* ---------- buttons ---------- */
+  .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  button.btn { border: 0; border-radius: 12px; padding: 13px 22px; font-size: 0.98rem; font-weight: 700; cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.2s, background 0.2s; font-family: inherit; }
+  button.btn:active { transform: scale(0.98); }
+  .btn-ghost { background: #eef2f8; color: var(--ink); }
+  .btn-ghost:hover:not(:disabled) { background: #e2e9f4; }
+  .btn-primary { background: linear-gradient(180deg, #3b82f6, var(--brand-dark)); color: #fff; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45); }
+  button.btn:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+
+  #status { min-height: 1.6em; margin-top: 14px; color: var(--muted); font-size: 0.92rem; }
+  .errorbox { background: var(--err-soft); border: 1px solid #f5c2c2; color: #991b1b; border-radius: 12px;
+    padding: 12px 16px; margin-top: 12px; font-size: 0.92rem; display: none; }
+  .errorbox.show { display: block; animation: rise 0.3s ease; }
+
+  /* ---------- staged checklist ---------- */
+  .stages { list-style: none; margin: 14px 0 0; padding: 0; display: none; }
+  .stages.show { display: block; }
+  .stages li { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 0.93rem; color: var(--muted); }
+  .stages li .dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #c6d2e4; flex: none;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.25s; }
+  .stages li.working { color: var(--ink); }
+  .stages li.working .dot { border-color: var(--brand); animation: spin 1s linear infinite; border-top-color: transparent; }
+  .stages li.done { color: var(--ink); }
+  .stages li.done .dot { background: var(--ok); border-color: var(--ok); color: #fff; animation: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- stats + tables ---------- */
+  .panel { margin-top: 20px; animation: rise 0.4s ease; }
+  .panel h2 { font-size: 1.25rem; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .panel .lede { color: var(--muted); margin: 0 0 12px; font-size: 0.94rem; }
+  .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 14px 0; }
+  .stat { background: #f8fafd; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .stat .v { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; }
+  .stat .k { font-size: 0.76rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat.alert .v { color: var(--warn); }
+  table.data { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.9rem; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+  table.data th { background: #f1f5fb; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #44546c; }
+  table.data td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .chip { background: var(--brand-soft); color: var(--brand-dark); font-size: 0.82rem; font-weight: 600;
+    border-radius: 999px; padding: 6px 12px; }
+
+  /* ---------- before / after ---------- */
+  .before-after { display: flex; align-items: center; gap: 16px; justify-content: center; margin: 18px 0 6px; flex-wrap: wrap; }
+  .bignum { text-align: center; background: #f8fafd; border: 1px solid var(--line); border-radius: 14px; padding: 14px 26px; min-width: 150px; }
+  .bignum .v { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; }
+  .bignum .k { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+  .bignum.after { background: var(--ok-soft); border-color: #bfe6d6; }
+  .bignum.after .v { color: var(--ok); }
+  .arrow { font-size: 1.6rem; color: var(--brand); font-weight: 800; }
+
+  .downloads { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .downloads a { text-decoration: none; border-radius: 12px; padding: 13px 22px; font-weight: 700; font-size: 0.98rem;
+    transition: transform 0.12s, box-shadow 0.2s; display: inline-block; }
+  .downloads a:active { transform: scale(0.98); }
+  .dl-main { background: linear-gradient(180deg, #10b981, #047857); color: #fff; box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35); }
+  .dl-sub { background: #eef2f8; color: var(--ink); }
+
+  /* ---------- mode cards ---------- */
+  .modecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
+  .modecard { border: 2px solid var(--line); border-radius: 14px; padding: 14px 15px; cursor: pointer; transition: all 0.2s; background: #fff; }
+  .modecard:hover { border-color: #9db8ea; }
+  .modecard.selected { border-color: var(--brand); background: #f4f8ff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15); }
+  .modecard b { display: block; font-size: 0.98rem; }
+  .modecard span { display: block; font-size: 0.83rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .modecard .warn { color: var(--warn); font-weight: 600; }
+  details.modes { margin-top: 16px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: #fbfcff; }
+  details.modes summary { cursor: pointer; font-weight: 700; font-size: 0.93rem; }
+  details.modes ul { margin: 8px 0; padding-left: 20px; font-size: 0.9rem; color: #33415c; }
+
+  /* ---------- trust ---------- */
+  .trust { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 26px; }
+  .trust .t { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow-sm); }
+  .trust .t b { display: block; margin-bottom: 4px; font-size: 0.94rem; }
+  .trust .t span { font-size: 0.85rem; color: var(--muted); line-height: 1.45; display: block; }
+  footer { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 30px; }
+  footer a { color: var(--muted); }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  @media (max-width: 560px) {
+    .step .lbl { display: none; }
+    .actions .btn { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <span class="logo" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="2" y="3" width="16" height="14" rx="2.5" stroke="#fff" stroke-width="1.8"/>
+        <line x1="2" y1="8" x2="18" y2="8" stroke="#fff" stroke-width="1.8"/>
+        <line x1="2" y1="12.5" x2="18" y2="12.5" stroke="#fff" stroke-width="1.8"/>
+        <line x1="8" y1="3" x2="8" y2="17" stroke="#fff" stroke-width="1.8"/>
+      </svg>
+    </span>
+    <span class="brand">CleanSheet<small>SPREADSHEET CLEANER</small></span>
+    <div class="langswitch" role="group" aria-label="Language / Limbă">
+      <button id="lang-en" class="on">EN</button><button id="lang-ro">RO</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 id="hero-title">Clean your customer list <span class="accent">in seconds.</span></h1>
+    <p data-i18n="hero_sub">Upload your Excel or CSV file. CleanSheet finds duplicates, invalid emails and messy formatting — fixes them, and shows you every single change.</p>
+    <div class="pills">
+      <span class="pill" data-i18n="pill_1">No sign-up</span>
+      <span class="pill" data-i18n="pill_2">Files auto-deleted</span>
+      <span class="pill" data-i18n="pill_3">Every change logged</span>
+    </div>
+  </section>
+
+  <main class="app" id="app">
+    <div class="steps" id="steps">
+      <div class="step active" data-step="1"><span class="n">1</span><span class="lbl" data-i18n="step_1">Upload</span></div>
+      <div class="step" data-step="2"><span class="n">2</span><span class="lbl" data-i18n="step_2">Review issues</span></div>
+      <div class="step" data-step="3"><span class="n">3</span><span class="lbl" data-i18n="step_3">Clean</span></div>
+      <div class="step" data-step="4"><span class="n">4</span><span class="lbl" data-i18n="step_4">Download</span></div>
+    </div>
+
+    <div class="body">
+      <div id="drop" tabindex="0" role="button" aria-label="Upload spreadsheet">
+        <div class="icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/>
+          </svg>
+        </div>
+        <div id="drop-label" data-i18n="drop_idle">Drop your spreadsheet here, or click to browse</div>
+        <div id="drop-hint" data-i18n="drop_hint">Excel (.xlsx) or CSV · max 25 MB · deleted after download</div>
+        <input id="file" type="file" accept=".csv,.xlsx,.xls">
+      </div>
+      <div class="filechip" id="filechip">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <rect x="2" y="3" width="16" height="14" rx="2.5" stroke="#059669" stroke-width="1.8"/>
+          <line x1="2" y1="8" x2="18" y2="8" stroke="#059669" stroke-width="1.8"/>
+        </svg>
+        <b id="filename"></b><span id="filesize" style="color:var(--muted)"></span>
+        <button id="fileclear" aria-label="Remove file">&times;</button>
+      </div>
+
+      <ul class="stages" id="stages">
+        <li><span class="dot"></span><span data-i18n="st_read">Reading file</span></li>
+        <li><span class="dot"></span><span data-i18n="st_dupes">Detecting duplicates</span></li>
+        <li><span class="dot"></span><span data-i18n="st_emails">Checking emails</span></li>
+        <li><span class="dot"></span><span data-i18n="st_format">Checking formatting</span></li>
+        <li><span class="dot"></span><span data-i18n="st_profile">Profiling columns</span></li>
+      </ul>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="btn-analyze" disabled data-i18n="btn_analyze">Analyze my file</button>
+      </div>
+
+      <div id="analysis" class="panel" hidden></div>
+
+      <div id="cleanbox" class="panel" hidden>
+        <h2 data-i18n="mode_title">Choose how thorough to be</h2>
+        <p class="lede" data-i18n="mode_lede">All modes remove duplicates and empty rows and fix whitespace. They differ only in judgment calls.</p>
+        <div class="modecards" id="modecards"></div>
+        <details class="modes">
+          <summary data-i18n="mode_details">What is the exact difference between modes?</summary>
+          <div id="modes-table"></div>
+          <div id="modes-guarantees"></div>
+        </details>
+        <div class="actions">
+          <button class="btn btn-primary" id="btn-clean" data-i18n="btn_clean">Clean my spreadsheet</button>
+        </div>
+      </div>
+
+      <div id="results" class="panel" hidden></div>
+      <div id="status" aria-live="polite"></div>
+      <div class="errorbox" id="errorbox"></div>
+    </div>
+  </main>
+
+  <section class="trust">
+    <div class="t"><b data-i18n="trust_1t">Private by design</b><span data-i18n="trust_1x">Files are processed temporarily and deleted right after download. No accounts, no storage.</span></div>
+    <div class="t"><b data-i18n="trust_2t">Every change logged</b><span data-i18n="trust_2x">The report lists each edit with row, reason and confidence — whitespace shown visibly.</span></div>
+    <div class="t"><b data-i18n="trust_3t">No guessing</b><span data-i18n="trust_3x">Ambiguous dates and invalid values are flagged for you, never silently rewritten.</span></div>
+    <div class="t"><b data-i18n="trust_4t">Deterministic first</b><span data-i18n="trust_4x">Fast, predictable rules do the work. No black-box surprises in your data.</span></div>
+  </section>
+
+  <footer><span data-i18n="footer">CleanSheet · files auto-delete after download (links expire after 30 minutes)</span> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></footer>
+</div>
+
+<script>
+const I18N = {
+  en: {
+    hero_title: 'Clean your customer list <span class="accent">in seconds.</span>',
+    hero_sub: 'Upload your Excel or CSV file. CleanSheet finds duplicates, invalid emails and messy formatting — fixes them, and shows you every single change.',
+    pill_1: 'No sign-up', pill_2: 'Files auto-deleted', pill_3: 'Every change logged',
+    step_1: 'Upload', step_2: 'Review issues', step_3: 'Clean', step_4: 'Download',
+    drop_idle: 'Drop your spreadsheet here, or click to browse',
+    drop_ready: 'File ready — or drop a different one to replace it',
+    drop_hint: 'Excel (.xlsx) or CSV · max 25 MB · deleted after download',
+    st_read: 'Reading file', st_dupes: 'Detecting duplicates', st_emails: 'Checking emails',
+    st_format: 'Checking formatting', st_profile: 'Profiling columns',
+    btn_analyze: 'Analyze my file', btn_clean: 'Clean my spreadsheet',
+    mode_title: 'Choose how thorough to be',
+    mode_lede: 'All modes remove duplicates and empty rows and fix whitespace. They differ only in judgment calls.',
+    mode_details: 'What is the exact difference between modes?',
+    mode_warn_short: 'Caution: assumes month-first dates.',
+    always_true: 'Always true, every mode:',
+    modes_error: 'Could not load mode details.',
+    analyzing: 'Analyzing your spreadsheet...',
+    cleaning: 'Cleaning... this usually takes a few seconds.',
+    found_1: 'Found 1 issue in ', found_n: 'Found {n} issues in ',
+    scanned: ' rows &times; {c} columns scanned. Here is what needs attention:',
+    suggested: 'Suggested fix:',
+    stat_rows: 'rows scanned', stat_dupes: 'duplicate rows', stat_empty: 'empty rows', stat_cells: 'empty cells',
+    th_problem: 'Problem', th_count: 'Count',
+    ready: 'Your spreadsheet is ready.',
+    rows_before: 'rows before', rows_after: 'rows after',
+    applied_line: '{a} changes applied. {p} left for your review in the report.',
+    th_fixed: 'What was fixed',
+    dl_cleaned: 'Download cleaned spreadsheet', dl_report: 'Download change report',
+    dl_note: 'Links expire after 30 minutes. Each file is deleted right after you download it.',
+    trust_1t: 'Private by design',
+    trust_1x: 'Files are processed temporarily and deleted right after download. No accounts, no storage.',
+    trust_2t: 'Every change logged',
+    trust_2x: 'The report lists each edit with row, reason and confidence — whitespace shown visibly.',
+    trust_3t: 'No guessing',
+    trust_3x: 'Ambiguous dates and invalid values are flagged for you, never silently rewritten.',
+    trust_4t: 'Deterministic first',
+    trust_4x: 'Fast, predictable rules do the work. No black-box surprises in your data.',
+    footer: 'CleanSheet · files auto-delete after download (links expire after 30 minutes)'
+  },
+  ro: {
+    hero_title: 'Curăță-ți lista de clienți <span class="accent">în câteva secunde.</span>',
+    hero_sub: 'Încarcă fișierul Excel sau CSV. CleanSheet găsește duplicatele, emailurile invalide și formatările haotice — le corectează și îți arată fiecare modificare.',
+    pill_1: 'Fără cont', pill_2: 'Fișiere șterse automat', pill_3: 'Fiecare modificare înregistrată',
+    step_1: 'Încarcă', step_2: 'Verifică problemele', step_3: 'Curăță', step_4: 'Descarcă',
+    drop_idle: 'Trage tabelul aici sau apasă pentru a-l alege',
+    drop_ready: 'Fișier gata — sau trage altul pentru a-l înlocui',
+    drop_hint: 'Excel (.xlsx) sau CSV · max 25 MB · șters după descărcare',
+    st_read: 'Se citește fișierul', st_dupes: 'Se detectează duplicatele', st_emails: 'Se verifică emailurile',
+    st_format: 'Se verifică formatarea', st_profile: 'Se profilează coloanele',
+    btn_analyze: 'Analizează fișierul', btn_clean: 'Curăță tabelul',
+    mode_title: 'Alege cât de amănunțit să fie',
+    mode_lede: 'Toate modurile elimină duplicatele și rândurile goale și corectează spațiile. Diferă doar la deciziile de interpretare.',
+    mode_details: 'Care este diferența exactă între moduri?',
+    mode_warn_short: 'Atenție: presupune date de tip lună-zi.',
+    always_true: 'Valabil întotdeauna, în orice mod:',
+    modes_error: 'Nu s-au putut încărca detaliile modurilor.',
+    analyzing: 'Se analizează tabelul...',
+    cleaning: 'Se curăță... durează de obicei câteva secunde.',
+    found_1: 'Am găsit o problemă în ', found_n: 'Am găsit {n} probleme în ',
+    scanned: ' rânduri &times; {c} coloane scanate. Iată ce necesită atenție:',
+    suggested: 'Remediere sugerată:',
+    stat_rows: 'rânduri scanate', stat_dupes: 'rânduri duplicat', stat_empty: 'rânduri goale', stat_cells: 'celule goale',
+    th_problem: 'Problemă', th_count: 'Număr',
+    ready: 'Tabelul este gata.',
+    rows_before: 'rânduri înainte', rows_after: 'rânduri după',
+    applied_line: '{a} modificări aplicate. {p} rămase pentru verificare în raport.',
+    th_fixed: 'Ce s-a corectat',
+    dl_cleaned: 'Descarcă tabelul curățat', dl_report: 'Descarcă raportul de modificări',
+    dl_note: 'Linkurile expiră după 30 de minute. Fiecare fișier este șters imediat după descărcare.',
+    trust_1t: 'Privat prin construcție',
+    trust_1x: 'Fișierele sunt procesate temporar și șterse imediat după descărcare. Fără conturi, fără stocare.',
+    trust_2t: 'Fiecare modificare înregistrată',
+    trust_2x: 'Raportul listează fiecare editare cu rând, motiv și încredere — spațiile vizibile.',
+    trust_3t: 'Fără presupuneri',
+    trust_3x: 'Datele ambigue și valorile invalide sunt marcate pentru tine, niciodată rescrise pe ascuns.',
+    trust_4t: 'Determinist mai întâi',
+    trust_4x: 'Reguli rapide și previzibile fac treaba. Fără surprize opace în datele tale.',
+    footer: 'CleanSheet · fișierele se șterg automat după descărcare (linkurile expiră după 30 de minute)'
+  }
+};
+
+const ISSUE_RO = {
+  empty_rows: 'Rânduri goale', duplicate_rows: 'Rânduri duplicat',
+  leading_trailing_whitespace: 'Spații la început/sfârșit', inconsistent_capitalization: 'Majuscule inconsistente',
+  invalid_email: 'Email invalid', duplicate_email: 'Email duplicat', unparseable_date: 'Dată ilizibilă'
+};
+const OP_RO = {
+  remove_empty_rows: 'Elimină rândurile goale', remove_duplicate_rows: 'Elimină duplicatele',
+  remove_duplicate_emails: 'Elimină emailurile duplicate', normalize_whitespace: 'Spații albe',
+  normalize_capitalization: 'Majuscule', normalize_dates: 'Date', validate_emails: 'Emailuri',
+  normalize_nulls: 'Valori lipsă', strip_strings: 'Spații marginale'
+};
+
+let lang = 'en';
+try { lang = localStorage.getItem('cleansheet-lang') || 'en'; } catch (e) {}
+if (lang !== 'ro') lang = 'en';
+
+function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
+function prettyIssue(k) {
+  if (lang === 'ro' && ISSUE_RO[k]) return ISSUE_RO[k];
+  return k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+function prettyOp(op) {
+  if (lang === 'ro' && OP_RO[op]) return OP_RO[op];
+  return op.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+const dropLabel = document.getElementById('drop-label');
+const filechip = document.getElementById('filechip');
+const filenameEl = document.getElementById('filename');
+const filesizeEl = document.getElementById('filesize');
+const btnAnalyze = document.getElementById('btn-analyze');
+const btnClean = document.getElementById('btn-clean');
+const stagesEl = document.getElementById('stages');
+const analysisEl = document.getElementById('analysis');
+const cleanboxEl = document.getElementById('cleanbox');
+const resultsEl = document.getElementById('results');
+const statusEl = document.getElementById('status');
+const errorbox = document.getElementById('errorbox');
+const modecardsEl = document.getElementById('modecards');
+let currentFile = null;
+let selectedMode = 'default';
+let modeInfo = {};
+let lastAnalysis = null;
+let lastClean = null;
+
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmtSize(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const v = t(el.dataset.i18n);
+    if (v) el.textContent = v;
+  });
+  document.getElementById('hero-title').innerHTML = t('hero_title');
+  document.getElementById('lang-en').classList.toggle('on', lang === 'en');
+  document.getElementById('lang-ro').classList.toggle('on', lang === 'ro');
+  if (!currentFile) dropLabel.textContent = t('drop_idle');
+  loadModes();
+  if (lastAnalysis) renderAnalysis(lastAnalysis);
+  if (lastClean) renderClean(lastClean);
+}
+
+function setLang(l) {
+  lang = l === 'ro' ? 'ro' : 'en';
+  try { localStorage.setItem('cleansheet-lang', lang); } catch (e) {}
+  applyLang();
+}
+document.getElementById('lang-en').addEventListener('click', () => setLang('en'));
+document.getElementById('lang-ro').addEventListener('click', () => setLang('ro'));
+
+function setStep(n) {
+  document.querySelectorAll('#steps .step').forEach((el) => {
+    const s = Number(el.dataset.step);
+    el.classList.toggle('active', s === n);
+    el.classList.toggle('done', s < n);
+    el.querySelector('.n').textContent = s < n ? '✓' : String(s);
+  });
+}
+
+function showError(msg) {
+  errorbox.textContent = msg;
+  errorbox.classList.add('show');
+  statusEl.textContent = '';
+}
+function clearError() { errorbox.classList.remove('show'); errorbox.textContent = ''; }
+
+function setFile(f) {
+  currentFile = f;
+  clearError();
+  analysisEl.hidden = true; analysisEl.innerHTML = '';
+  cleanboxEl.hidden = true;
+  resultsEl.hidden = true; resultsEl.innerHTML = '';
+  statusEl.textContent = '';
+  lastAnalysis = null; lastClean = null;
+  if (f) {
+    dropLabel.textContent = t('drop_ready');
+    filenameEl.textContent = f.name;
+    filesizeEl.textContent = fmtSize(f.size);
+    filechip.classList.add('show');
+    btnAnalyze.disabled = false;
+    setStep(1);
+  } else {
+    dropLabel.textContent = t('drop_idle');
+    filechip.classList.remove('show');
+    btnAnalyze.disabled = true;
+  }
+}
+
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+fileInput.addEventListener('change', () => setFile(fileInput.files[0] || null));
+document.getElementById('fileclear').addEventListener('click', (e) => { e.stopPropagation(); fileInput.value = ''; setFile(null); });
+['dragover', 'dragenter'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) setFile(f);
+});
+
+async function postFile(url, extraFields) {
+  const form = new FormData();
+  form.append('file', currentFile, currentFile.name);
+  if (extraFields) for (const [k, v] of Object.entries(extraFields)) form.append(k, v);
+  const resp = await fetch(url, { method: 'POST', body: form });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.detail || ('Request failed: ' + resp.status));
+  return data;
+}
+
+function runStages() {
+  const items = [...stagesEl.querySelectorAll('li')];
+  stagesEl.classList.add('show');
+  items.forEach((li) => { li.classList.remove('working', 'done'); li.querySelector('.dot').textContent = ''; });
+  let i = 0;
+  const tick = () => {
+    if (i > 0) { items[i - 1].classList.remove('working'); items[i - 1].classList.add('done'); items[i - 1].querySelector('.dot').textContent = '✓'; }
+    if (i < items.length) { items[i].classList.add('working'); i++; setTimeout(tick, 260); }
+  };
+  tick();
+  return () => {
+    items.forEach((li) => { li.classList.remove('working'); li.classList.add('done'); li.querySelector('.dot').textContent = '✓'; });
+  };
+}
+
+function stat(v, k, alert) {
+  return '<div class="stat' + (alert ? ' alert' : '') + '"><div class="v">' + v + '</div><div class="k">' + esc(k) + '</div></div>';
+}
+
+function renderAnalysis(a) {
+  const totalIssues = Object.values(a.issue_counts).reduce((s, v) => s + v, 0);
+  const head = totalIssues === 1 ? t('found_1') : t('found_n').replace('{n}', totalIssues);
+  let html = '<h2>' + esc(head) + esc(a.filename) + '</h2>';
+  html += '<p class="lede">' + a.rows + t('scanned').replace('{c}', a.columns) + '</p>';
+  html += '<div class="statgrid">';
+  html += stat(a.rows, t('stat_rows'), false);
+  html += stat(a.duplicate_rows, t('stat_dupes'), a.duplicate_rows > 0);
+  html += stat(a.empty_rows, t('stat_empty'), a.empty_rows > 0);
+  html += stat(a.empty_cells, t('stat_cells'), false);
+  html += '</div>';
+  html += '<table class="data"><tr><th>' + esc(t('th_problem')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
+  for (const [k, v] of Object.entries(a.issue_counts)) html += '<tr><td>' + esc(prettyIssue(k)) + '</td><td class="num">' + v + '</td></tr>';
+  html += '</table>';
+  if (a.suggested_operations.length) {
+    html += '<p class="lede">' + esc(t('suggested')) + '</p><div class="chips">' +
+      a.suggested_operations.map((op) => '<span class="chip">' + esc(prettyOp(op)) + '</span>').join('') + '</div>';
+  }
+  analysisEl.innerHTML = html;
+  analysisEl.hidden = false;
+}
+
+btnAnalyze.addEventListener('click', async () => {
+  if (!currentFile) return;
+  clearError();
+  btnAnalyze.disabled = true;
+  statusEl.textContent = t('analyzing');
+  const finishStages = runStages();
+  try {
+    const a = await postFile('/api/analyze');
+    finishStages();
+    stagesEl.classList.remove('show');
+    statusEl.textContent = '';
+    lastAnalysis = a;
+    renderAnalysis(a);
+    cleanboxEl.hidden = false;
+    setStep(2);
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    btnAnalyze.disabled = false;
+  }
+});
+
+function renderClean(c) {
+  const pending = c.total_changes - c.applied_changes;
+  let html = '<h2>' + esc(t('ready')) + '</h2>';
+  html += '<div class="before-after">';
+  html += '<div class="bignum"><div class="v">' + c.rows_before + '</div><div class="k">' + esc(t('rows_before')) + '</div></div>';
+  html += '<div class="arrow">&rarr;</div>';
+  html += '<div class="bignum after"><div class="v">' + c.rows_after + '</div><div class="k">' + esc(t('rows_after')) + '</div></div>';
+  html += '</div>';
+  html += '<p class="lede">' + esc(t('applied_line').replace('{a}', c.applied_changes).replace('{p}', pending)) + '</p>';
+  html += '<table class="data"><tr><th>' + esc(t('th_fixed')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
+  for (const [k, v] of Object.entries(c.by_rule)) html += '<tr><td>' + esc(prettyOp(k)) + '</td><td class="num">' + v + '</td></tr>';
+  html += '</table>';
+  html += '<div class="downloads">';
+  html += '<a class="dl-main" href="' + c.download_cleaned_url + '">' + esc(t('dl_cleaned')) + '</a>';
+  html += '<a class="dl-sub" href="' + c.download_report_url + '">' + esc(t('dl_report')) + '</a>';
+  html += '</div>';
+  html += '<p class="lede">' + esc(t('dl_note')) + '</p>';
+  resultsEl.innerHTML = html;
+  resultsEl.hidden = false;
+}
+
+btnClean.addEventListener('click', async () => {
+  if (!currentFile) return;
+  clearError();
+  btnClean.disabled = true;
+  statusEl.textContent = t('cleaning');
+  setStep(3);
+  try {
+    const c = await postFile('/api/clean', { mode: selectedMode });
+    statusEl.textContent = '';
+    lastClean = c;
+    renderClean(c);
+    setStep(4);
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    btnClean.disabled = false;
+  }
+});
+
+// Cleaning modes, rendered from /api/modes so the page can't describe
+// something the engine doesn't do.
+function selectMode(id) {
+  selectedMode = id;
+  document.querySelectorAll('.modecard').forEach((el) => {
+    const on = el.dataset.mode === id;
+    el.classList.toggle('selected', on);
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+}
+
+function loadModes() {
+  fetch('/api/modes?lang=' + lang)
+    .then((r) => r.json())
+    .then((data) => {
+      data.modes.forEach((m) => { modeInfo[m.id] = m; });
+      modecardsEl.innerHTML = '';
+      data.modes.forEach((m) => {
+        const card = document.createElement('div');
+        card.className = 'modecard' + (m.id === selectedMode ? ' selected' : '');
+        card.dataset.mode = m.id;
+        card.setAttribute('role', 'radio');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-checked', m.id === selectedMode ? 'true' : 'false');
+        card.innerHTML = '<b>' + esc(m.name) + '</b><span>' + esc(m.tagline) + '</span>' +
+          (m.warning ? '<span class="warn">' + esc(t('mode_warn_short')) + '</span>' : '');
+        const pick = () => selectMode(m.id);
+        card.addEventListener('click', pick);
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+        modecardsEl.appendChild(card);
+      });
+      let html = '<table class="data"><tr><th>' + esc(t('th_problem')) + '</th>';
+      data.modes.forEach((m) => { html += '<th>' + esc(m.name) + '</th>'; });
+      html += '</tr>';
+      data.comparison.forEach((row) => {
+        html += '<tr><td>' + esc(row.operation) + '</td>';
+        data.modes.forEach((m) => { html += '<td>' + esc(row[m.id]) + '</td>'; });
+        html += '</tr>';
+      });
+      html += '</table>';
+      document.getElementById('modes-table').innerHTML = html;
+      document.getElementById('modes-guarantees').innerHTML =
+        '<p><strong>' + esc(t('always_true')) + '</strong></p><ul>' +
+        data.guarantees.map((g) => '<li>' + esc(g) + '</li>').join('') + '</ul>';
+    })
+    .catch(() => {
+      document.getElementById('modes-table').innerHTML = '<p>' + esc(t('modes_error')) + '</p>';
+    });
+}
+
+applyLang();
+</script>
+</body>
+</html>

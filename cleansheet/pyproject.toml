@@ -1,0 +1,77 @@
+[project]
+name = "cleansheet"
+version = "0.1.0"
+description = "Automated Excel/CSV data cleaning engine"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2.0",
+    "openpyxl>=3.1.0",
+    "rapidfuzz>=3.9.0",
+    "pydantic>=2.6.0",
+    "typer>=0.9.0",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.100.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+api = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "python-multipart>=0.0.9",
+    "httpx>=0.27.0",
+]
+
+[build-system]
+requires = ["setuptools>=69.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short --cov=cleaning_engine --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = [
+    "E", "F", "I", "N", "W", "UP", "B", "C4", "DTZ", "T10", "SIM", "RET", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "NPY", "RSE", "RUF", "ASYNC", "LOG", "TCH", "INT", "PERF", "Q", "TD"
+]
+ignore = []
+fixable = ["F", "I", "N", "E", "W", "UP", "B", "C4", "DTZ", "T10", "SIM", "RET", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "NPY", "RSE", "RUF", "ASYNC", "LOG", "TCH", "INT", "PERF", "Q", "TD"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.per-file-ignores]
+# Numeric literals in asserts are normal test style, not magic values
+"tests/**" = ["PLR2004"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cleaning_engine*"]
+
+[project.scripts]
+cleansheet = "cleaning_engine.cli:app"

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CleanSheet — Terms of Use</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 20px 64px; color: #0f1e33; line-height: 1.6; }
+  .lang { text-align: right; margin-bottom: 8px; }
+  .lang button { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 700; }
+  .lang button.on { background: #2563eb; color: #fff; border-color: #2563eb; }
+  h1 { letter-spacing: -0.02em; }
+  a { color: #2563eb; }
+  .back { display: inline-block; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="lang">
+  <button id="btn-en" class="on">EN</button>
+  <button id="btn-ro">RO</button>
+</div>
+<a class="back" href="/">← CleanSheet</a>
+<div id="en">
+<h1>Terms of Use</h1>
+<p><small>Last updated: September 2026. CleanSheet is currently in private beta and free to use.</small></p>
+<h2>The service</h2>
+<p>CleanSheet automatically cleans spreadsheet files (CSV/XLSX): it removes duplicates and empty rows, fixes whitespace, capitalization, common email typos and unambiguous dates, and produces a change report. Cleaning modes are described in the app — including what each mode does <em>not</em> do.</p>
+<h2>Beta disclaimer — please read</h2>
+<p>This is beta software. Deduplication keeps the first occurrence, ambiguous dates are either left flagged or — in Aggressive mode — assumed month-first, and typo fixes are guesses from a fixed list. <strong>Always review the change report and verify results before using cleaned data for business decisions, imports, or mailings.</strong> We are not liable for decisions made on cleaned output.</p>
+<h2>Acceptable use</h2>
+<ul>
+  <li>Only upload files you have the right to process. You are responsible for complying with data-protection law for any personal data you upload.</li>
+  <li>Do not abuse the service (e.g. automated bulk uploads evading the rate limits). Max file size is 25 MB.</li>
+</ul>
+<h2>Availability and files</h2>
+<p>The service may change or go offline without notice during beta. Result download links expire after 30 minutes and files are deleted after download — download promptly and keep your own copies.</p>
+</div>
+<div id="ro" hidden>
+<h1>Condiții de utilizare</h1>
+<p><small>Ultima actualizare: septembrie 2026. CleanSheet este în beta privat și gratuit.</small></p>
+<h2>Serviciul</h2>
+<p>CleanSheet curăță automat fișiere de tip tabel (CSV/XLSX): elimină duplicatele și rândurile goale, corectează spațiile, majusculele, greșelile frecvente din emailuri și datele fără ambiguitate, și produce un raport al modificărilor. Modurile de curățare sunt descrise în aplicație — inclusiv ce <em>nu</em> face fiecare mod.</p>
+<h2>Notă beta — vă rugăm citiți</h2>
+<p>Acesta este software beta. Deduplicarea păstrează prima apariție, datele ambigue sunt fie lăsate marcate, fie — în modul Agresiv — presupuse lună-zi, iar corecturile de typo sunt presupuneri dintr-o listă fixă. <strong>Verificați întotdeauna raportul de modificări și validați rezultatele înainte de a folosi datele curățate pentru decizii de business, importuri sau trimiteri.</strong> Nu răspundem pentru decizii luate pe baza datelor curățate.</p>
+<h2>Utilizare acceptabilă</h2>
+<ul>
+  <li>Încărcați doar fișiere pe care aveți dreptul să le procesați. Sunteți responsabil de respectarea legislației privind protecția datelor pentru datele personale încărcate.</li>
+  <li>Nu abuzați serviciul (ex. încărcări automate în masă pentru eludarea limitelor). Dimensiunea maximă este 25 MB.</li>
+</ul>
+<h2>Disponibilitate și fișiere</h2>
+<p>Serviciul se poate modifica sau poate fi oprit fără preaviz în perioada beta. Linkurile de descărcare expiră după 30 de minute, iar fișierele sunt șterse după descărcare — descărcați prompt și păstrați-vă propriile copii.</p>
+</div>
+<script>
+const en = document.getElementById('en'), ro = document.getElementById('ro');
+const bEn = document.getElementById('btn-en'), bRo = document.getElementById('btn-ro');
+function pick(lang) {
+  const isRo = lang === 'ro';
+  en.hidden = isRo; ro.hidden = !isRo;
+  bEn.classList.toggle('on', !isRo); bRo.classList.toggle('on', isRo);
+  document.documentElement.lang = lang;
+  try { localStorage.setItem('cleansheet-lang', lang); } catch (e) {}
+}
+bEn.addEventListener('click', () => pick('en'));
+bRo.addEventListener('click', () => pick('ro'));
+try { if (localStorage.getItem('cleansheet-lang') === 'ro') pick('ro'); } catch (e) {}
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+ID,Name,Email,Phone,Date,Amount,Active,Category,Notes
+1,John Smith,john@gmail.com,555-1234,2026-01-15,100.50,TRUE,A,"Normal record"
+2,Jane Doe,jane@yahoo.com,555-5678,2026-02-20,200.00,FALSE,B,"Has comma, in notes"
+3,Bob Wilson,bob@hotmail.com,555-9012,2026-03-10,150.75,TRUE,A,"Normal"
+4,Alice Brown,alice@outlook.com,555-3456,2026-04-05,300.00,TRUE,C,"Line 1
+Line 2"
+5,Charlie Davis,charlie@company.com,555-7890,2026-05-12,75.25,FALSE,B,""
+6,David Lee,david@invalid,555-1111,2026-06-18,500.00,TRUE,A,"Invalid email"
+7,Eve White,eve@protonmail.com,555-2222,2026-07-25,125.00,FALSE,C,"Special chars: àéïöü"
+8,Frank Green,frank@aol.com,555-3333,2026-08-30,400.00,TRUE,A,"Tabs	in	notes"
+9,Grace Hall,grace@icloud.com,555-4444,2026-09-14,250.00,FALSE,B,"Newlines
+in
+notes"
+10,Henry King,henry@gmial.com,555-5555,2026-10-01,175.00,TRUE,C,"Email typo"
+11,Ivy Scott,ivy@yaho.com,555-6666,2026-11-11,325.00,FALSE,A,"Email typo"
+12,Jack Adams,jack@hotmial.com,555-7777,2026-12-25,225.00,TRUE,B,"Email typo"
+13,,,,2026-01-01,,,,Empty row
+14,John Smith,john@gmail.com,555-1234,2026-01-15,100.50,TRUE,A,Duplicate of row 1
+15,Jane Doe,jane@yahoo.com,555-5678,2026-02-20,200.00,FALSE,B,Duplicate of row 2

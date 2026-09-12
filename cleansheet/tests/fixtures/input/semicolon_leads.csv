@@ -1,0 +1,6 @@
+First Name;Last Name;Email;Company;Phone;Signup Date;Notes
+John;Smith;john@gmail.com;Acme Ltd.;555-1234;2026-01-15;Normal record
+JOHN;SMITH;JOHN@GMAIL.COM;ACME LTD;555-1234;15.01.2026;Duplicate, different case
+Jane;Doe;jane@gmial.com;Globex Corp;555-5678;2026-02-20;Email typo here
+Bob;Wilson;N/A;Wayne Enterprises;555-9012;-;Missing email and date
+Alice;Brown;alice@outlook.com;NULL;555-3456;2026-04-05;Missing company
