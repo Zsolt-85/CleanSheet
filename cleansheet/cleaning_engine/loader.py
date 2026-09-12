@@ -138,12 +138,26 @@ def load_spreadsheet(file_path: str | Path, sheet_name: str | int | None = 0) ->
     )
 
 
+def safe_filename(filename: str) -> str:
+    """Sanitize an uploader-provided filename: basename only, no path tricks,
+    reasonable length, fallback when empty."""
+    name = Path(filename or "").name.strip().replace("\\", "_").replace("/", "_")
+    if not name or name in (".", ".."):
+        return "upload.csv"
+    return name[:100]
+
+
 def load_spreadsheet_from_bytes(
     content: bytes,
     filename: str,
     sheet_name: str | int | None = 0,
 ) -> SpreadsheetData:
-    """Load spreadsheet from bytes (for web uploads)."""
+    """Load spreadsheet from bytes (for web uploads).
+
+    The original filename is preserved on the result (sanitized) — callers
+    use it for download names and reporting.
+    """
+    filename = safe_filename(filename)
     suffix = Path(filename).suffix.lower()
     if suffix not in SUPPORTED_EXTENSIONS:
         raise SpreadsheetLoadError(f"Unsupported file type: {suffix}")
@@ -153,6 +167,8 @@ def load_spreadsheet_from_bytes(
         tmp_path = Path(tmp.name)
 
     try:
-        return load_spreadsheet(tmp_path, sheet_name)
+        data = load_spreadsheet(tmp_path, sheet_name)
     finally:
         tmp_path.unlink(missing_ok=True)
+    data.filename = filename
+    return data

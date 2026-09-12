@@ -64,6 +64,8 @@
     background: linear-gradient(90deg, var(--brand), #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent;
     font-variant-numeric: tabular-nums; }
   .counter-label { color: var(--muted); font-size: 0.9rem; font-weight: 600; }
+  .counter-sub { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+  .counter-sub b { color: var(--ok); }
 
   /* ---------- app card ---------- */
   .app { background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow);
@@ -214,7 +216,8 @@
     </div>
     <div class="counter" id="counter" hidden>
       <div class="counter-num" id="counter-num">0</div>
-      <div class="counter-label" data-i18n="counter_label">spreadsheets cleaned and counting</div>
+      <div class="counter-label" id="counter-label">spreadsheets cleaned</div>
+      <div class="counter-sub" id="counter-sub"></div>
     </div>
   </section>
 
@@ -296,7 +299,9 @@ const I18N = {
     hero_title: 'Clean your customer list <span class="accent">in seconds.</span>',
     hero_sub: 'Upload your Excel or CSV file. CleanSheet finds duplicates, invalid emails and messy formatting — fixes them, and shows you every single change.',
     pill_1: 'No sign-up', pill_2: 'Files auto-deleted', pill_3: 'Every change logged',
-    counter_label: 'spreadsheets cleaned and counting',
+    counter_label: 'spreadsheets cleaned so far',
+    counter_beta: 'live beta count — real numbers',
+    counter_today: '{m} cleaned today',
     step_1: 'Upload', step_2: 'Review issues', step_3: 'Clean', step_4: 'Download',
     drop_idle: 'Drop your spreadsheet here, or click to browse',
     drop_ready: 'File ready — or drop a different one to replace it',
@@ -337,7 +342,9 @@ const I18N = {
     hero_title: 'Curăță-ți lista de clienți <span class="accent">în câteva secunde.</span>',
     hero_sub: 'Încarcă fișierul Excel sau CSV. CleanSheet găsește duplicatele, emailurile invalide și formatările haotice — le corectează și îți arată fiecare modificare.',
     pill_1: 'Fără cont', pill_2: 'Fișiere șterse automat', pill_3: 'Fiecare modificare înregistrată',
-    counter_label: 'tabele curățate și numărul crește',
+    counter_label: 'tabele curățate până acum',
+    counter_beta: 'contor beta live — numere reale',
+    counter_today: '{m} curățate astăzi',
     step_1: 'Încarcă', step_2: 'Verifică problemele', step_3: 'Curăță', step_4: 'Descarcă',
     drop_idle: 'Trage tabelul aici sau apasă pentru a-l alege',
     drop_ready: 'Fișier gata — sau trage altul pentru a-l înlocui',
@@ -427,9 +434,14 @@ function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'
 function fmtSize(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
 
 let lastJobs = 0;
+let lastToday = 0;
+function fmtNum(n) { return n.toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-US'); }
 function renderCounter() {
-  document.getElementById('counter-num').textContent =
-    lastJobs.toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-US');
+  document.getElementById('counter-num').textContent = fmtNum(lastJobs);
+  document.getElementById('counter-label').textContent =
+    t('counter_label') + ' · ' + t('counter_beta');
+  document.getElementById('counter-sub').innerHTML =
+    '<b>' + esc(fmtNum(lastToday)) + '</b> ' + esc(t('counter_today').replace('{m}', ''));
 }
 
 function applyLang() {
@@ -672,15 +684,14 @@ function loadModes() {
 
 applyLang();
 
-// Public proof counter: real totals from /api/stats, revealed only once the
-// server-side threshold is crossed — never shown, never faked, below that.
+// Public proof counter: always-real totals from /api/stats, framed as a live
+// beta count. Never inflated, never faked — small early numbers included.
 fetch('/api/stats')
   .then((r) => r.json())
   .then((s) => {
-    if (!s.jobs_completed || s.jobs_completed < (s.public_counter_threshold || 500)) return;
-    lastJobs = s.jobs_completed;
-    const banner = document.getElementById('counter');
-    banner.hidden = false;
+    lastJobs = s.jobs_completed || 0;
+    lastToday = s.jobs_today || 0;
+    document.getElementById('counter').hidden = false;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       renderCounter();
       return;
@@ -689,8 +700,7 @@ fetch('/api/stats')
     const step = (now) => {
       const p = Math.min(1, (now - start) / dur);
       const eased = 1 - Math.pow(1 - p, 3);
-      document.getElementById('counter-num').textContent =
-        Math.round(lastJobs * eased).toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-US');
+      document.getElementById('counter-num').textContent = fmtNum(Math.round(lastJobs * eased));
       if (p < 1) requestAnimationFrame(step);
       else renderCounter();
     };

@@ -58,6 +58,23 @@ class TestLoader:
         with pytest.raises(SpreadsheetLoadError):
             load_spreadsheet(Path("nonexistent.csv"))
 
+    def test_from_bytes_preserves_filename(self, messy_contacts_path: Path):
+        from cleaning_engine import load_spreadsheet_from_bytes
+
+        content = messy_contacts_path.read_bytes()
+        data = load_spreadsheet_from_bytes(content, "my leads.csv")
+        assert data.filename == "my leads.csv"
+        assert data.dataframe.shape[0] > 0
+
+    def test_from_bytes_sanitizes_nasty_filename(self, messy_contacts_path: Path):
+        from cleaning_engine import load_spreadsheet_from_bytes
+
+        content = messy_contacts_path.read_bytes()
+        data = load_spreadsheet_from_bytes(content, "../../etc/passwd.csv")
+        assert ".." not in data.filename
+        assert "/" not in data.filename
+        assert data.filename.endswith(".csv")
+
     def test_column_names_stripped(self, messy_contacts_path: Path):
         data = load_spreadsheet(messy_contacts_path)
         # Column names should have no leading/trailing whitespace

@@ -61,7 +61,7 @@ The web UI is bilingual (English/Romanian, persisted switcher) and includes
 | GET | `/api/health` | Liveness (also the Docker healthcheck) |
 | GET | `/api/limits` | Upload limits |
 | GET | `/api/modes` | Mode semantics + comparison (`?lang=ro` for Romanian) — single source of truth for the frontend |
-| GET | `/api/stats` | Anonymous totals (completed cleanings, rows in/out, changes applied) + public-counter threshold |
+| GET | `/api/stats` | Anonymous totals (completed cleanings, rows in/out, changes applied, jobs today) shown as a live beta count — always real, never inflated |
 | POST | `/api/analyze` | Multipart `file` → profile, issues, suggested ops (nothing stored) |
 | POST | `/api/clean` | Multipart `file` + `mode` + optional `email_column` → summary + download URLs |
 | GET | `/api/download/{token}/{cleaned\|report}` | Single-use download; files auto-deleted, links expire after 30 min |

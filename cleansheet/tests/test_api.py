@@ -109,6 +109,10 @@ class TestClean:
         xls = pd.ExcelFile(io.BytesIO(rep.content))
         assert "Changes" in xls.sheet_names
 
+        # Downloads carry the original filename, not temp gibberish
+        assert "messy_cleaned.xlsx" in dl.headers["content-disposition"]
+        assert "messy_report.xlsx" in rep.headers["content-disposition"]
+
         # Files are single-use: second download is gone
         assert client.get(data["download_cleaned_url"]).status_code == 404
         assert client.get(data["download_report_url"]).status_code == 404
@@ -194,7 +198,7 @@ class TestStats:
             "rows_in": 0,
             "rows_out": 0,
             "changes_applied": 0,
-            "public_counter_threshold": 500,
+            "jobs_today": 0,
         }
 
     def test_clean_increments_stats(self, client: TestClient, messy_csv_bytes: bytes):
@@ -206,6 +210,7 @@ class TestStats:
         assert resp.status_code == 200
         data = client.get("/api/stats").json()
         assert data["jobs_completed"] == 1
+        assert data["jobs_today"] == 1
         assert data["rows_in"] == 20
         assert data["rows_out"] == 12
         assert data["changes_applied"] > 0

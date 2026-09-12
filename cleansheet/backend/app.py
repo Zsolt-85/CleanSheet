@@ -196,6 +196,8 @@ async def clean(
     tmpdir = Path(tempfile.gettempdir()) / "cleansheet"
     tmpdir.mkdir(exist_ok=True)
     token = secrets.token_urlsafe(24)
+    # data.filename is already sanitized by the loader; on-disk names stay
+    # unique via token, download names stay human-readable.
     stem = Path(data.filename).stem[:50] or "cleaned"
     cleaned_path = tmpdir / f"{stem}_{token}_cleaned.xlsx"
     report_path = tmpdir / f"{stem}_{token}_report.xlsx"
@@ -210,6 +212,8 @@ async def clean(
     _results[token] = {
         "cleaned": cleaned_path,
         "report": report_path,
+        "cleaned_name": f"{stem}_cleaned.xlsx",
+        "report_name": f"{stem}_report.xlsx",
         "expires": time.time() + RESULT_TTL_SECONDS,
     }
 
@@ -235,14 +239,11 @@ async def clean(
     }
 
 
-PUBLIC_COUNTER_THRESHOLD = 500
-
-
 @app.get("/api/stats")
 def stats() -> dict[str, Any]:
-    """Anonymous aggregate totals. Powers the public counter, which the
-    frontend only displays once jobs cross PUBLIC_COUNTER_THRESHOLD."""
-    return {**get_stats(), "public_counter_threshold": PUBLIC_COUNTER_THRESHOLD}
+    """Anonymous aggregate totals (jobs, rows, changes, jobs_today).
+    Displayed in the frontend as a live beta count — always real numbers."""
+    return get_stats()
 
 
 @app.get("/api/download/{token}/{kind}")
@@ -257,7 +258,7 @@ def download(token: str, kind: str):  # type: ignore[no-untyped-def]
     if not path.exists():
         raise HTTPException(status_code=404, detail="File no longer available.")
 
-    filename = f"{path.stem.rsplit('_', 2)[0]}_{kind}.xlsx"
+    filename = str(entry.get(f"{kind}_name", f"cleansheet_{kind}.xlsx"))
     # Serve then delete this file; drop the token entry once both are gone
     response = FileResponse(
         path,
