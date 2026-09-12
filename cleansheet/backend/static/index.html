@@ -57,6 +57,13 @@
   .pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
   .pill { font-size: 0.8rem; font-weight: 600; color: #33415c; background: #fff; border: 1px solid var(--line);
     border-radius: 999px; padding: 6px 12px; box-shadow: var(--shadow-sm); }
+  .counter { margin: 26px auto 0; display: inline-block; background: var(--card); border: 1px solid var(--line);
+    border-radius: 18px; padding: 16px 42px; box-shadow: var(--shadow); animation: rise 0.5s ease; }
+  .counter[hidden] { display: none; }
+  .counter-num { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em;
+    background: linear-gradient(90deg, var(--brand), #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-variant-numeric: tabular-nums; }
+  .counter-label { color: var(--muted); font-size: 0.9rem; font-weight: 600; }
 
   /* ---------- app card ---------- */
   .app { background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow);
@@ -205,6 +212,10 @@
       <span class="pill" data-i18n="pill_2">Files auto-deleted</span>
       <span class="pill" data-i18n="pill_3">Every change logged</span>
     </div>
+    <div class="counter" id="counter" hidden>
+      <div class="counter-num" id="counter-num">0</div>
+      <div class="counter-label" data-i18n="counter_label">spreadsheets cleaned and counting</div>
+    </div>
   </section>
 
   <main class="app" id="app">
@@ -285,6 +296,7 @@ const I18N = {
     hero_title: 'Clean your customer list <span class="accent">in seconds.</span>',
     hero_sub: 'Upload your Excel or CSV file. CleanSheet finds duplicates, invalid emails and messy formatting — fixes them, and shows you every single change.',
     pill_1: 'No sign-up', pill_2: 'Files auto-deleted', pill_3: 'Every change logged',
+    counter_label: 'spreadsheets cleaned and counting',
     step_1: 'Upload', step_2: 'Review issues', step_3: 'Clean', step_4: 'Download',
     drop_idle: 'Drop your spreadsheet here, or click to browse',
     drop_ready: 'File ready — or drop a different one to replace it',
@@ -325,6 +337,7 @@ const I18N = {
     hero_title: 'Curăță-ți lista de clienți <span class="accent">în câteva secunde.</span>',
     hero_sub: 'Încarcă fișierul Excel sau CSV. CleanSheet găsește duplicatele, emailurile invalide și formatările haotice — le corectează și îți arată fiecare modificare.',
     pill_1: 'Fără cont', pill_2: 'Fișiere șterse automat', pill_3: 'Fiecare modificare înregistrată',
+    counter_label: 'tabele curățate și numărul crește',
     step_1: 'Încarcă', step_2: 'Verifică problemele', step_3: 'Curăță', step_4: 'Descarcă',
     drop_idle: 'Trage tabelul aici sau apasă pentru a-l alege',
     drop_ready: 'Fișier gata — sau trage altul pentru a-l înlocui',
@@ -413,12 +426,19 @@ let lastClean = null;
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function fmtSize(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
 
+let lastJobs = 0;
+function renderCounter() {
+  document.getElementById('counter-num').textContent =
+    lastJobs.toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-US');
+}
+
 function applyLang() {
   document.documentElement.lang = lang;
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const v = t(el.dataset.i18n);
     if (v) el.textContent = v;
   });
+  if (!document.getElementById('counter').hidden) renderCounter();
   document.getElementById('hero-title').innerHTML = t('hero_title');
   document.getElementById('lang-en').classList.toggle('on', lang === 'en');
   document.getElementById('lang-ro').classList.toggle('on', lang === 'ro');
@@ -651,6 +671,33 @@ function loadModes() {
 }
 
 applyLang();
+
+// Public proof counter: real totals from /api/stats, revealed only once the
+// server-side threshold is crossed — never shown, never faked, below that.
+fetch('/api/stats')
+  .then((r) => r.json())
+  .then((s) => {
+    if (!s.jobs_completed || s.jobs_completed < (s.public_counter_threshold || 500)) return;
+    lastJobs = s.jobs_completed;
+    const banner = document.getElementById('counter');
+    banner.hidden = false;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      renderCounter();
+      return;
+    }
+    const start = performance.now(), dur = 1200;
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      document.getElementById('counter-num').textContent =
+        Math.round(lastJobs * eased).toLocaleString(lang === 'ro' ? 'ro-RO' : 'en-US');
+      if (p < 1) requestAnimationFrame(step);
+      else renderCounter();
+    };
+    requestAnimationFrame(step);
+  })
+  .catch(() => {});
+
 </script>
 </body>
 </html>

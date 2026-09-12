@@ -16,6 +16,12 @@ def client() -> TestClient:
     return TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def _isolated_stats(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stats DB isolated per test: never touch the developer's real totals."""
+    monkeypatch.setenv("CLEANSHEET_STATS_PATH", str(tmp_path / "stats.db"))
+
+
 @pytest.fixture
 def messy_csv_bytes() -> bytes:
     return (Path(__file__).parent / "fixtures" / "input" / "messy_contacts.csv").read_bytes()
@@ -177,6 +183,44 @@ class TestModes:
     def test_modes_unknown_lang_falls_back_to_english(self, client: TestClient):
         data = client.get("/api/modes", params={"lang": "xx"}).json()
         assert data["lang"] == "en"
+
+
+class TestStats:
+    """Anonymous aggregate counters: real totals, no user data."""
+
+    def test_stats_shape(self, client: TestClient):
+        assert client.get("/api/stats").json() == {
+            "jobs_completed": 0,
+            "rows_in": 0,
+            "rows_out": 0,
+            "changes_applied": 0,
+            "public_counter_threshold": 500,
+        }
+
+    def test_clean_increments_stats(self, client: TestClient, messy_csv_bytes: bytes):
+        resp = client.post(
+            "/api/clean",
+            files={"file": ("messy.csv", messy_csv_bytes)},
+            data={"mode": "default"},
+        )
+        assert resp.status_code == 200
+        data = client.get("/api/stats").json()
+        assert data["jobs_completed"] == 1
+        assert data["rows_in"] == 20
+        assert data["rows_out"] == 12
+        assert data["changes_applied"] > 0
+
+    def test_stats_failure_never_breaks_clean(
+        self, client: TestClient, messy_csv_bytes: bytes, monkeypatch: pytest.MonkeyPatch
+    ):
+        import backend.app as app_module
+
+        def _boom(*args: object, **kwargs: object) -> None:
+            raise RuntimeError("stats db gone")
+
+        monkeypatch.setattr(app_module, "record_cleaning", _boom)
+        resp = client.post("/api/clean", files={"file": ("messy.csv", messy_csv_bytes)})
+        assert resp.status_code == 200
 
 
 if __name__ == "__main__":

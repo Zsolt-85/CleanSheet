@@ -41,6 +41,7 @@ from cleaning_engine.loader import (
     SUPPORTED_EXTENSIONS,
     SpreadsheetLoadError,
 )
+from backend.stats import get_stats, record_cleaning
 from cleaning_engine.modes import build_pipeline, get_modes_content
 
 MAX_UPLOAD_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
@@ -213,10 +214,17 @@ async def clean(
     }
 
     applied = sum(1 for c in report.changes if c.applied)
+    rows_before = data.dataframe.shape[0]
+    rows_after = cleaned_data.dataframe.shape[0]
+    try:
+        record_cleaning(rows_before, rows_after, applied)
+    except Exception:
+        # Telemetry must never break a cleaning request.
+        pass
     return {
         "filename": data.filename,
-        "rows_before": data.dataframe.shape[0],
-        "rows_after": cleaned_data.dataframe.shape[0],
+        "rows_before": rows_before,
+        "rows_after": rows_after,
         "total_changes": len(report.changes),
         "applied_changes": applied,
         "by_rule": dict(sorted(report.summary.items(), key=lambda kv: -kv[1])),
@@ -225,6 +233,16 @@ async def clean(
         "download_report_url": f"/api/download/{token}/report",
         "expires_in_seconds": RESULT_TTL_SECONDS,
     }
+
+
+PUBLIC_COUNTER_THRESHOLD = 500
+
+
+@app.get("/api/stats")
+def stats() -> dict[str, Any]:
+    """Anonymous aggregate totals. Powers the public counter, which the
+    frontend only displays once jobs cross PUBLIC_COUNTER_THRESHOLD."""
+    return {**get_stats(), "public_counter_threshold": PUBLIC_COUNTER_THRESHOLD}
 
 
 @app.get("/api/download/{token}/{kind}")
