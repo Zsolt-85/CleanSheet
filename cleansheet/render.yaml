@@ -1,0 +1,13 @@
+# Render Blueprint: one-click deploy of the CleanSheet web MVP.
+# Free tier: single instance (in-memory download tokens work as tested),
+# spins down after 15 min idle, ~1 min cold start on wake.
+services:
+  - type: web
+    name: cleansheet
+    runtime: python
+    buildCommand: pip install ".[api]"
+    startCommand: uvicorn backend.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0

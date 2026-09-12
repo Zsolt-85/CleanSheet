@@ -73,7 +73,21 @@ return a generic 500. Per-IP rate limiting (120/min) and security headers are
 built into the middleware. Result files live in the OS temp dir under
 unguessable tokens.
 
-## Docker (deployment)
+## Deployment (Render free tier)
+
+The repo includes `render.yaml`, so deployment is a Blueprint import:
+
+1. Sign up at render.com with GitHub (no credit card).
+2. Dashboard → **New +** → **Blueprint** → connect the `Zsolt-85/CleanSheet` repo.
+3. Render reads `render.yaml` and creates the `cleansheet` web service — just Apply.
+4. Wait for the build (~3–5 min) → open the `*.onrender.com` URL.
+
+Free-tier facts: single instance (matches how the app was tested), sleeps
+after 15 min idle (first visit wakes it in ~1 min), 750 instance-hours/month.
+Stats live in the container's temp storage and reset on redeploy — fine for
+beta, revisit when usage justifies a disk or managed store.
+
+## Docker (alternative / Cloud Run)
 
 ```bash
 docker build -t cleansheet .
