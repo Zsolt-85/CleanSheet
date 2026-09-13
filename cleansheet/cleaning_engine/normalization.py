@@ -132,60 +132,88 @@ def normalize_null_values(
     return df
 
 
-def strip_all_strings(
-    df: pd.DataFrame,
-    tracker: ChangeTracker,
-    rule_name: str = "strip_strings",
-) -> pd.DataFrame:
-    """
-    Strip whitespace from all string columns.
-
-    Args:
-        df: Input DataFrame
-        tracker: ChangeTracker to record changes
-        rule_name: Name of the rule for tracking
-
-    Returns:
-        DataFrame with stripped strings
-    """
-    str_columns = df.select_dtypes(include=["object", "string"]).columns
-
-    for col in str_columns:
-        original_series = df[col].copy()
-
-        for idx, value in original_series.items():
-            if pd.isna(value):
-                continue
-
-            original = str(value)
-            stripped = original.strip()
-
-            if stripped != original:
-                tracker.add_change(
-                    ChangeRecord(
-                        row_index=int(idx),
-                        column_name=col,
-                        original_value=original,
-                        new_value=stripped,
-                        reason="Leading/trailing whitespace stripped",
-                        rule_name=rule_name,
-                        confidence=ConfidenceLevel.HIGH,
-                        applied=True,
-                    )
-                )
-                df.at[idx, col] = stripped
-
-    return df
+# Country name -> ISO 3166-1 alpha-2. Exact full-value match only (after
+# strip + lowercase); every conversion is logged with its original value.
+COUNTRY_MAP = {
+    "united states": "US",
+    "usa": "US",
+    "u.s.a.": "US",
+    "united kingdom": "GB",
+    "uk": "GB",
+    "u.k.": "GB",
+    "great britain": "GB",
+    "germany": "DE",
+    "deutschland": "DE",
+    "france": "FR",
+    "italy": "IT",
+    "italia": "IT",
+    "spain": "ES",
+    "espana": "ES",
+    "españa": "ES",
+    "canada": "CA",
+    "australia": "AU",
+    "japan": "JP",
+    "china": "CN",
+    "india": "IN",
+    "brazil": "BR",
+    "mexico": "MX",
+    "netherlands": "NL",
+    "holland": "NL",
+    "belgium": "BE",
+    "belgie": "BE",
+    "belgique": "BE",
+    "switzerland": "CH",
+    "austria": "AT",
+    "österreich": "AT",
+    "sweden": "SE",
+    "norway": "NO",
+    "denmark": "DK",
+    "finland": "FI",
+    "poland": "PL",
+    "polska": "PL",
+    "russia": "RU",
+    "turkey": "TR",
+    "türkiye": "TR",
+    "israel": "IL",
+    "uae": "AE",
+    "united arab emirates": "AE",
+    "singapore": "SG",
+    "hong kong": "HK",
+    "south korea": "KR",
+    "korea": "KR",
+    "taiwan": "TW",
+    "new zealand": "NZ",
+    "romania": "RO",
+    "românia": "RO",
+    "hungary": "HU",
+    "magyarország": "HU",
+    "bulgaria": "BG",
+    "serbia": "RS",
+    "srbija": "RS",
+    "moldova": "MD",
+    "republic of moldova": "MD",
+    "ukraine": "UA",
+    "croatia": "HR",
+    "hrvatska": "HR",
+    "greece": "GR",
+    "ellada": "GR",
+    "ireland": "IE",
+    "portugal": "PT",
+    "czechia": "CZ",
+    "czech republic": "CZ",
+    "slovakia": "SK",
+    "slovenia": "SI",
+}
 
 
 def normalize_country_codes(
     df: pd.DataFrame,
     column: str,
     tracker: ChangeTracker,
-    rule_name: str = "normalize_country_codes",
+    rule_name: str = "normalize_countries",
 ) -> pd.DataFrame:
     """
-    Normalize country codes to ISO 3166-1 alpha-2.
+    Normalize country names to ISO 3166-1 alpha-2 codes.
 
     Args:
         df: Input DataFrame
@@ -196,56 +224,13 @@ def normalize_country_codes(
     Returns:
         DataFrame with normalized country codes
     """
-    # Common country name -> code mappings
-    COUNTRY_MAP = {
-        "united states": "US",
-        "usa": "US",
-        "u.s.a.": "US",
-        "united kingdom": "GB",
-        "uk": "GB",
-        "u.k.": "GB",
-        "great britain": "GB",
-        "germany": "DE",
-        "france": "FR",
-        "italy": "IT",
-        "spain": "ES",
-        "canada": "CA",
-        "australia": "AU",
-        "japan": "JP",
-        "china": "CN",
-        "india": "IN",
-        "brazil": "BR",
-        "mexico": "MX",
-        "netherlands": "NL",
-        "holland": "NL",
-        "belgium": "BE",
-        "switzerland": "CH",
-        "austria": "AT",
-        "sweden": "SE",
-        "norway": "NO",
-        "denmark": "DK",
-        "finland": "FI",
-        "poland": "PL",
-        "russia": "RU",
-        "turkey": "TR",
-        "israel": "IL",
-        "uae": "AE",
-        "united arab emirates": "AE",
-        "singapore": "SG",
-        "hong kong": "HK",
-        "south korea": "KR",
-        "korea": "KR",
-        "taiwan": "TW",
-        "new zealand": "NZ",
-    }
-
     if column not in df.columns:
         return df
 
     original_series = df[column].copy()
 
     for idx, value in original_series.items():
-        if pd.isna(value) or str(value).strip() == "":
+        if is_missing_value(value):
             continue
 
         original = str(value).strip()
@@ -271,27 +256,36 @@ def normalize_country_codes(
     return df
 
 
-def deduplicate_semantic_values(
+def normalize_all_countries(
     df: pd.DataFrame,
-    column: str,
     tracker: ChangeTracker,
-    similarity_threshold: float = 0.85,
-    rule_name: str = "deduplicate_semantic",
+    rule_name: str = "normalize_countries",
+    columns: list[str] | None = None,
 ) -> pd.DataFrame:
     """
-    Deduplicate semantically similar values using fuzzy matching.
-    Note: This is a placeholder for future AI-enhanced deduplication.
+    Normalize country names in given columns, or auto-detect country
+    columns (majority of values match known country names).
 
     Args:
         df: Input DataFrame
-        column: Column name to deduplicate
         tracker: ChangeTracker to record changes
-        similarity_threshold: Threshold for considering values similar (0-1)
+        rule_name: Name of the rule for tracking
+        columns: Specific columns, or None to auto-detect
         rule_name: Name of the rule for tracking
 
     Returns:
-        DataFrame (currently unchanged - placeholder for future implementation)
+        DataFrame with normalized country codes in auto-detected columns
     """
-    # TODO: Implement with RapidFuzz when AI layer is added
-    # For now, just return unchanged
+    if columns is None:
+        columns = []
+        for col in df.select_dtypes(include=["object", "string"]).columns:
+            sample = df[col].dropna().astype(str)
+            sample = sample[~sample.map(is_missing_value)].head(30)
+            if len(sample) == 0:
+                continue
+            hits = sample.apply(lambda x: x.strip().lower() in COUNTRY_MAP).sum()
+            if hits / len(sample) > 0.5:
+                columns.append(col)
+    for col in columns:
+        df = normalize_country_codes(df, col, tracker, rule_name)
     return df

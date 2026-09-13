@@ -17,6 +17,8 @@ No sign-up. No stored files. No AI black box — only deterministic, explainable
 - Capitalization (title case with acronym and Romanian legal-form lists: SC, SRL, SA)
 - Emails (validation, common typo-domain fixes like `gmial.com → gmail.com`)
 - Dates (safe formats → ISO; ambiguous ones flagged, never guessed)
+- Phones (formatting normalized, country never guessed, implausible flagged)
+- Countries (names → ISO codes, e.g. `Romania → RO`)
 - CSV delimiter auto-detection: comma, semicolon (EU Excel exports), tab, pipe
 
 ## Cleaning modes
@@ -28,7 +30,9 @@ Modes differ **only in judgment calls**. Everything else is identical.
 | Empty rows, exact dupes, email dupes, whitespace, safe dates | Yes | Yes | Yes |
 | Capitalization | No | Yes | Yes |
 | Ambiguous dates (`03/04/2026`) | Left + flagged | Left + flagged | Assumed MM/DD |
-| Email typo fixes | Suggested only | Applied | Applied |
+| Email typo fixes (`gmial.com`) | Suggested only | Applied | Applied |
+| Phone normalization (country never guessed) | Yes | Yes | Yes |
+| Country names → ISO codes | Yes | Yes | Yes |
 | Invalid values | Kept + flagged | Kept + flagged | Kept + flagged |
 
 **Always true, every mode:** every applied change is logged with reason and

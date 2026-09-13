@@ -68,6 +68,13 @@ class TestAnalyze:
         assert types["Email"] == "email"
         assert types["Date"] == "date"
         assert "remove_duplicate_rows" in data["suggested_operations"]
+        assert "normalize_phones" in data["suggested_operations"]
+        # Value-frequency facets present with counts
+        assert len(data["facets"]) == 7
+        email_facet = next(f for f in data["facets"] if f["name"] == "Email")
+        top = {v["value"]: v["count"] for v in email_facet["values"]}
+        assert top.get("john@gmail.com", 0) >= 2
+        assert sum(top.values()) <= 20
 
     def test_analyze_bad_extension(self, client: TestClient):
         resp = client.post("/api/analyze", files={"file": ("notes.txt", b"hello")})

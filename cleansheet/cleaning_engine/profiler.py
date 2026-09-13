@@ -218,6 +218,10 @@ def analyze_spreadsheet(
         issues["duplicate_rows"] = [{"row": int(i) + 1} for i in dup_indices]
         suggested_ops.append("remove_duplicate_rows")
 
+    # Phone columns get formatting normalization even without visible issues
+    if any(c.inferred_type == ColumnType.PHONE for c in profile.columns):
+        suggested_ops.append("normalize_phones")
+
     # Column-specific issues
     for col_profile in profile.columns:
         col_name = col_profile.name

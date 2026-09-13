@@ -34,7 +34,16 @@ from cleaning_engine.duplicates import remove_duplicate_emails, remove_duplicate
 from cleaning_engine.emails import is_valid_email, normalize_email, validate_emails
 from cleaning_engine.exporter import export_cleaned, export_report
 from cleaning_engine.loader import MAX_COLUMNS, SpreadsheetLoadError
-from cleaning_engine.normalization import remove_empty_rows, strip_all_strings
+from cleaning_engine.normalization import (
+    normalize_all_countries,
+    normalize_country_codes,
+    remove_empty_rows,
+)
+from cleaning_engine.phones import (
+    is_valid_phone,
+    normalize_all_phones,
+    normalize_phone,
+)
 from cleaning_engine.whitespace import normalize_all_whitespace, normalize_whitespace
 
 
@@ -296,6 +305,63 @@ class TestEmails:
         assert result.loc[1, "Email"] == "john@gmail.com"
 
 
+class TestPhones:
+    """Tests for phone normalization (formatting only, country never guessed)."""
+
+    def test_normalize_phone(self):
+        assert normalize_phone("+40 721 123 456") == "+40721123456"
+        assert normalize_phone("0040-721-123-456") == "+40721123456"
+        assert normalize_phone("(555) 123-4567") == "5551234567"
+        assert normalize_phone("555.123.4567") == "5551234567"
+        assert normalize_phone("555-1234") == "5551234"
+        # National trunk preserved (no country guessing)
+        assert normalize_phone("0721 123 456") == "0721123456"
+
+    def test_is_valid_phone(self):
+        assert is_valid_phone("+40721123456")
+        assert is_valid_phone("555-1234")
+        assert not is_valid_phone("123")
+        assert not is_valid_phone("1" * 30)
+        assert not is_valid_phone("")
+
+    def test_normalize_phones_column(self):
+        df = pd.DataFrame({"Phone": ["(555) 123-4567", "0040721123456", "123", "N/A"]})
+        tracker = ChangeTracker()
+        result = normalize_all_phones(df, tracker, columns=["Phone"])
+        assert result.loc[0, "Phone"] == "5551234567"
+        assert result.loc[1, "Phone"] == "+40721123456"
+        # Too short: flagged, not rewritten
+        assert result.loc[2, "Phone"] == "123"
+        assert any(not c.applied and c.rule_name == "validate_phones" for c in tracker.changes)
+        # Missing marker untouched here (null normalization owns it)
+        assert result.loc[3, "Phone"] == "N/A"
+
+    def test_phone_autodetect_skips_other_columns(self):
+        df = pd.DataFrame({"Name": ["John Smith", "Jane Doe"], "Phone": ["555-1234", "555-5678"]})
+        tracker = ChangeTracker()
+        result = normalize_all_phones(df, tracker)
+        assert result.loc[0, "Phone"] == "5551234"
+        assert result.loc[0, "Name"] == "John Smith"
+        assert len(tracker.get_changes_by_rule("normalize_phones")) == 2
+
+    def test_pipeline_normalizes_phones_not_ids(self):
+        from cleaning_engine.models import SpreadsheetData
+
+        df = pd.DataFrame(
+            {
+                "Name": ["John", "Jane"],
+                "Phone": ["(555) 123-4567", "+40 721 123 456"],
+                "OrderID": ["10001", "10002"],
+            }
+        )
+        data = SpreadsheetData(dataframe=df, filename="t.csv", file_type="csv")
+        cleaned, tracker = create_default_pipeline().run(data)
+        assert cleaned.dataframe["Phone"].tolist() == ["5551234567", "+40721123456"]
+        # 5-digit numeric IDs are not phone columns: untouched
+        assert cleaned.dataframe["OrderID"].tolist() == ["10001", "10002"]
+        assert len(tracker.get_changes_by_rule("normalize_phones")) == 2
+
+
 class TestWhitespace:
     """Tests for whitespace normalization."""
 
@@ -380,13 +446,22 @@ class TestNormalization:
         assert len(result) == 2
         assert len(tracker.changes) == 1
 
-    def test_strip_all_strings(self):
-        df = pd.DataFrame({"A": ["  hello  ", "world  "], "B": [1, 2]})
+    def test_normalize_countries(self):
+        df = pd.DataFrame({"Country": ["Romania", "germany", "RO", "France", "N/A"]})
         tracker = ChangeTracker()
-        result = strip_all_strings(df, tracker)
-        assert result.loc[0, "A"] == "hello"
-        assert result.loc[1, "A"] == "world"
-        assert len(tracker.changes) == 2
+        result = normalize_all_countries(df, tracker)
+        assert result["Country"].tolist() == ["RO", "DE", "RO", "FR", "N/A"]
+        # N/A is not a country fix (handled by null normalization instead)
+        changes = tracker.get_changes_by_rule("normalize_countries")
+        assert len(changes) == 3
+        assert all(c.confidence == ConfidenceLevel.HIGH for c in changes)
+
+    def test_country_autodetect_skips_non_country_columns(self):
+        df = pd.DataFrame({"Name": ["John", "Jane"], "City": ["Cluj", "Iasi"]})
+        tracker = ChangeTracker()
+        result = normalize_all_countries(df, tracker)
+        assert result["Name"].tolist() == ["John", "Jane"]
+        assert len(tracker.changes) == 0
 
     def test_is_missing_value(self):
         from cleaning_engine.normalization import is_missing_value
@@ -568,9 +643,7 @@ class TestExporter:
         assert visualize_whitespace(123) == 123
 
         tracker = ChangeTracker()
-        tracker.add_change(
-            ChangeRecord(0, "Name", "  Vlad  ", "Vlad", "r", "normalize_whitespace")
-        )
+        tracker.add_change(ChangeRecord(0, "Name", "  Vlad  ", "Vlad", "r", "normalize_whitespace"))
         output = tmp_path / "report.xlsx"
         export_report(tracker, output)
         changes = pd.read_excel(output, sheet_name="Changes")
@@ -649,6 +722,43 @@ class TestCLI:
         assert result.exit_code == 0, result.output
         assert "Completed cleanings" in result.output
         assert "20 / 12" in result.output
+
+    def test_clean_command_creates_outputs(self, simple_leads_path: Path, tmp_path: Path):
+        from typer.testing import CliRunner
+
+        from cleaning_engine.cli import app as cli_app
+
+        out = tmp_path / "cleaned.xlsx"
+        rep = tmp_path / "report.xlsx"
+        result = CliRunner().invoke(
+            cli_app,
+            ["clean", str(simple_leads_path), "--output", str(out), "--report", str(rep)],
+        )
+        assert result.exit_code == 0, result.output
+        assert out.exists() and rep.exists()
+        df = pd.read_excel(out)
+        assert df.shape[0] == 12
+        assert "Changes" in pd.ExcelFile(rep).sheet_names
+
+    def test_clean_command_rejects_bad_file(self, tmp_path: Path):
+        from typer.testing import CliRunner
+
+        from cleaning_engine.cli import app as cli_app
+
+        bad = tmp_path / "bad.xlsx"
+        bad.write_bytes(b"not an excel file")
+        result = CliRunner().invoke(cli_app, ["clean", str(bad)])
+        assert result.exit_code != 0
+
+    def test_analyze_command_runs(self, simple_leads_path: Path):
+        from typer.testing import CliRunner
+
+        from cleaning_engine.cli import app as cli_app
+
+        result = CliRunner().invoke(cli_app, ["analyze", str(simple_leads_path)])
+        assert result.exit_code == 0, result.output
+        assert "Spreadsheet Profile" in result.output
+        assert "Issues Detected" in result.output
 
 
 if __name__ == "__main__":

@@ -322,6 +322,9 @@ const I18N = {
     suggested: 'Suggested fix:',
     stat_rows: 'rows scanned', stat_dupes: 'duplicate rows', stat_empty: 'empty rows', stat_cells: 'empty cells',
     th_problem: 'Problem', th_count: 'Count',
+    facets_title: 'Top values per column',
+    facet_value: 'Value',
+    facet_unique: 'unique',
     ready: 'Your spreadsheet is ready.',
     rows_before: 'rows before', rows_after: 'rows after',
     applied_line: '{a} changes applied. {p} left for your review in the report.',
@@ -365,6 +368,9 @@ const I18N = {
     suggested: 'Remediere sugerată:',
     stat_rows: 'rânduri scanate', stat_dupes: 'rânduri duplicat', stat_empty: 'rânduri goale', stat_cells: 'celule goale',
     th_problem: 'Problemă', th_count: 'Număr',
+    facets_title: 'Valori frecvente pe coloană',
+    facet_value: 'Valoare',
+    facet_unique: 'unice',
     ready: 'Tabelul este gata.',
     rows_before: 'rânduri înainte', rows_after: 'rânduri după',
     applied_line: '{a} modificări aplicate. {p} rămase pentru verificare în raport.',
@@ -392,7 +398,8 @@ const OP_RO = {
   remove_empty_rows: 'Elimină rândurile goale', remove_duplicate_rows: 'Elimină duplicatele',
   remove_duplicate_emails: 'Elimină emailurile duplicate', normalize_whitespace: 'Spații albe',
   normalize_capitalization: 'Majuscule', normalize_dates: 'Date', validate_emails: 'Emailuri',
-  normalize_nulls: 'Valori lipsă', strip_strings: 'Spații marginale'
+  normalize_nulls: 'Valori lipsă', normalize_phones: 'Telefoane', validate_phones: 'Verificare telefoane',
+  normalize_countries: 'Țări'
 };
 
 let lang = 'en';
@@ -560,6 +567,17 @@ function renderAnalysis(a) {
   html += '<table class="data"><tr><th>' + esc(t('th_problem')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
   for (const [k, v] of Object.entries(a.issue_counts)) html += '<tr><td>' + esc(prettyIssue(k)) + '</td><td class="num">' + v + '</td></tr>';
   html += '</table>';
+  if (a.facets && a.facets.length) {
+    html += '<h3>' + esc(t('facets_title')) + '</h3>';
+    a.facets.forEach((f) => {
+      html += '<details class="modes"><summary>' + esc(f.name) + ' — ' + f.unique + ' ' + esc(t('facet_unique')) + '</summary>';
+      html += '<table class="data"><tr><th>' + esc(t('facet_value')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
+      f.values.forEach((row) => {
+        html += '<tr><td>' + esc(row.value) + '</td><td class="num">' + row.count + '</td></tr>';
+      });
+      html += '</table></details>';
+    });
+  }
   if (a.suggested_operations.length) {
     html += '<p class="lede">' + esc(t('suggested')) + '</p><div class="chips">' +
       a.suggested_operations.map((op) => '<span class="chip">' + esc(prettyOp(op)) + '</span>').join('') + '</div>';

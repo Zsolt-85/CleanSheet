@@ -80,6 +80,8 @@ MODE_COMPARISON: list[dict[str, str]] = [
         "aggressive": "Yes",
     },
     {"operation": "Normalize safe dates", "conservative": "Yes", "default": "Yes", "aggressive": "Yes"},
+    {"operation": "Normalize phone numbers", "conservative": "Yes", "default": "Yes", "aggressive": "Yes"},
+    {"operation": "Normalize country names", "conservative": "Yes", "default": "Yes", "aggressive": "Yes"},
     {
         "operation": "Ambiguous dates (03/04/2026)",
         "conservative": "Left + flagged",
@@ -156,6 +158,8 @@ MODE_COMPARISON_RO: list[dict[str, str]] = [
         "aggressive": "Da",
     },
     {"operation": "Normalizează datele sigure", "conservative": "Da", "default": "Da", "aggressive": "Da"},
+    {"operation": "Normalizează numerele de telefon", "conservative": "Da", "default": "Da", "aggressive": "Da"},
+    {"operation": "Normalizează numele țărilor", "conservative": "Da", "default": "Da", "aggressive": "Da"},
     {
         "operation": "Date ambigue (03/04/2026)",
         "conservative": "Lăsate + marcate",

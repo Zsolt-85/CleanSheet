@@ -26,6 +26,7 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from backend.stats import get_stats, incr, record_cleaning
 from cleaning_engine import (
     CleaningPipeline,
     analyze_spreadsheet,
@@ -41,7 +42,6 @@ from cleaning_engine.loader import (
     SUPPORTED_EXTENSIONS,
     SpreadsheetLoadError,
 )
-from backend.stats import get_stats, incr, record_cleaning
 from cleaning_engine.modes import build_pipeline, get_modes_content
 
 MAX_UPLOAD_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
@@ -121,8 +121,7 @@ def _build_pipeline(mode: str, email_column: str | None) -> CleaningPipeline:
     try:
         return build_pipeline(mode, email_column)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    return pipeline
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @app.get("/api/health")
@@ -159,6 +158,21 @@ async def analyze(file: UploadFile = File(...)) -> dict[str, Any]:
     issues = {k: v[:10] for k, v in analysis.issues.items()}
     issue_counts = {k: len(v) for k, v in analysis.issues.items()}
 
+    # Value-frequency facets (OpenRefine-style): top values per column so
+    # users can spot inconsistencies at a glance. Missing markers excluded.
+    facets = []
+    for col in data.dataframe.columns[:50]:
+        series = data.dataframe[col].dropna().astype(str)
+        series = series[series.str.strip() != ""].head(1000)
+        top = series.value_counts().head(8)
+        facets.append(
+            {
+                "name": str(col),
+                "unique": int(series.nunique()),
+                "values": [{"value": str(v), "count": int(c)} for v, c in top.items()],
+            }
+        )
+
     incr("analyze_calls")
     return {
         "filename": data.filename,
@@ -173,6 +187,7 @@ async def analyze(file: UploadFile = File(...)) -> dict[str, Any]:
         ],
         "issue_counts": issue_counts,
         "issue_examples": issues,
+        "facets": facets,
         "suggested_operations": analysis.suggested_operations,
     }
 

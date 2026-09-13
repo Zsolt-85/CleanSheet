@@ -19,9 +19,11 @@ from cleaning_engine.models import (
     SpreadsheetProfile,
 )
 from cleaning_engine.normalization import (
+    normalize_all_countries,
     normalize_null_values,
     remove_empty_rows,
 )
+from cleaning_engine.phones import normalize_all_phones
 from cleaning_engine.profiler import analyze_spreadsheet, profile_spreadsheet
 from cleaning_engine.whitespace import normalize_all_whitespace
 
@@ -50,6 +52,13 @@ class PipelineConfig:
     # Email validation
     validate_emails: bool = True
     auto_fix_email_typos: bool = True
+
+    # Phone normalization (safe formatting fixes on phone-type columns;
+    # implausible lengths flagged, never rewritten)
+    normalize_phones: bool = True
+
+    # Country normalization (known country names to ISO codes, logged)
+    normalize_countries: bool = True
 
     # Null handling
     normalize_nulls: bool = True
@@ -144,6 +153,15 @@ class CleaningPipeline:
                 columns=self.config.target_columns,
             )
 
+        # Normalize phones (profile-detected phone columns only: never
+        # guess on numeric IDs or zips)
+        if self.config.normalize_phones:
+            df = normalize_all_phones(df, self.tracker, columns=self._phone_columns())
+
+        # Normalize country names to ISO codes (auto-detected columns)
+        if self.config.normalize_countries:
+            df = normalize_all_countries(df, self.tracker)
+
         # Validate emails
         if self.config.validate_emails and self.config.email_column:
             df = validate_emails(
@@ -186,6 +204,16 @@ class CleaningPipeline:
                 if c in df.columns and c not in self.config.skip_columns
             ]
         return [c for c in df.columns if c not in self.config.skip_columns]
+
+    def _phone_columns(self) -> list[str]:
+        """Profile-detected phone columns (never guess on numeric IDs)."""
+        if self.profile is None:
+            return []
+        return [
+            c.name
+            for c in self.profile.columns
+            if c.inferred_type.value == "phone" and c.name not in self.config.skip_columns
+        ]
 
     def run_and_export(
         self,
