@@ -119,17 +119,21 @@ cleansheet/
 │   ├── whitespace.py      # Whitespace normalization
 │   ├── capitalization.py  # Title-casing with acronym lists
 │   ├── dates.py           # Safe date normalization
-│   ├── normalization.py   # Nulls, missing markers, empty rows
+│   ├── normalization.py   # Nulls, missing markers, empty rows, countries
+│   ├── phones.py          # Phone normalization (country never guessed)
 │   ├── change_tracker.py  # Per-change records with reason + confidence
 │   ├── exporter.py        # Cleaned file + multi-sheet report export
 │   ├── modes.py           # Mode semantics (EN/RO, single source of truth)
 │   ├── pipeline.py        # Pipeline orchestration (default/conservative/aggressive)
-│   └── cli.py             # CLI: clean, analyze, modes, version
+│   └── cli.py             # CLI: clean, analyze, modes, stats, version
 ├── backend/
 │   ├── app.py             # FastAPI: analyze/clean/download/modes/legal
+│   ├── stats.py           # Anonymous aggregate counters (SQLite)
 │   └── static/            # Single-file bilingual frontend + legal pages
+├── assets/                # Generated marketing images (see assets/README.md)
+├── tools/                 # Generator scripts for demo data + assets
 ├── tests/
-│   ├── fixtures/input/    # Messy sample files (incl. semicolon CSV)
+│   ├── fixtures/input/    # Messy sample files (incl. semicolon CSV + upload demos)
 │   ├── fixtures/expected/ # Frozen golden outputs (regression-tested)
 │   ├── test_cleaning_engine.py
 │   └── test_api.py

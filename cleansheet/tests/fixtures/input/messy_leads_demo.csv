@@ -1,0 +1,40 @@
+First Name,Last Name,Email,Company,Phone,Signup Date,Status
+John,Dumitru,john.dumitru@yahoo.com,Acme Ltd.,555-1489,  05/19/2026 ,Pending
+grace,hall,  grace.hall@outlook.com ,acme ltd.,555-4267,2026-07-02,active
+grace,hall,  grace.hall@outlook.com ,acme ltd.,555-4267,2026-07-02,active
+Ioana,Marin,ioana.marin@company.com,Stark Industries,555-1911,2026-07-02,Pending
+maria,brown,maria.brown@outlok.com,  hooli ,555-1732,2026-05-19,pending
+maria,brown,maria.brown@outlok.com,  hooli ,555-1732,2026-05-19,pending
+Maria,Marin,maria.marin@outlook.com,Acme Ltd.,555-3452,03/04/2026,Active
+Maria,Marin,maria.marin@outlook.com,Acme Ltd.,555-3452,03/04/2026,Active
+Grace,Popescu,grace.popescu@yahoo.com,Globex Corp,555-6407,03/04/2026,Pending
+Alice,Ionescu,alice.ionescu@outlok.com,Globex Corp,555-4670,05/19/2026,Inactive
+Maria,Wilson,maria.wilson@hotmail.com,Acme Ltd.,555-1626,"March 4, 2026",Pending
+Elena,Dumitru,not-an-email,Acme Ltd.,555-3465,03/04/2026,Active
+grace,popescu,grace.popescu@yahoo.com,stark industries,555-8073,2026-05-19,active
+Maria,Stan,maria.stan@yahoo.com,Initech,555-3809,2026-03-04,Active
+  Vlad ,Lee,vlad.lee@gmial.com,Stark Industries,555-2035,05/19/2026,Pending
+  Vlad ,Lee,vlad.lee@gmial.com,Stark Industries,555-2035,05/19/2026,Pending
+Grace,Stan,grace.stan@company.com,Umbrella Corp,555-5114,2026-03-04,Active
+Grace,Stan,grace.stan@company.com,Umbrella Corp,555-5114,2026-03-04,Active
+Alice,Brown,alice.brown@yahoo.com,Stark Industries,555-9275,05/19/2026,Active
+Alice,Ionescu,alice.ionescu@outlook.com,Acme Ltd.,555-5831,2026-07-02,Inactive
+Alice,Ionescu,alice.ionescu@outlook.com,Acme Ltd.,555-5831,2026-07-02,Inactive
+GRACE,DUMITRU,GRACE.DUMITRU@YAHOO.COM,INITECH,555-2080,2026-05-19,ACTIVE
+GRACE,DUMITRU,GRACE.DUMITRU@YAHOO.COM,INITECH,555-2080,2026-05-19,ACTIVE
+John,Marin,john.marincompany.com,Hooli,555-2748,05/19/2026,Inactive
+John,Marin,john.marincompany.com,Hooli,555-2748,05/19/2026,Inactive
+John,Marin,JOHN.MARINCOMPANY.COM,Hooli,555-2748,05/19/2026,Inactive
+vlad,ionescu,vlad.ionescu@company.com,initech,555-5692,2026-05-19,inactive
+vlad,ionescu,vlad.ionescu@company.com,initech,555-5692,2026-05-19,inactive
+Maria,Ionescu,maria.ionescu@yahoo.com,Stark Industries,555-1963,03/04/2026,Active
+Grace,Marin,grace.maringmail.com,Globex Corp,555-3607,  2026-03-04 ,Active
+Grace,Marin,grace.maringmail.com,Globex Corp,555-3607,  2026-03-04 ,Active
+Grace,Smith,grace.smith@gmial.com,Globex Corp,555-7096,"March 4, 2026",Pending
+maria,stan,  maria.stan@company.com ,initech,555-2228,2026-05-19,inactive
+Ioana,Stan,ioana.stan@yahoo.com,Initech,555-3850,2026-05-19,Pending
+Bob,Ionescu,bob.ionescu@hotmail.com,Hooli,555-4178,05/19/2026,Pending
+Bob,Ionescu,bob.ionescu@hotmail.com,Hooli,555-4178,05/19/2026,Pending
+Bob,Stan,bob.stan@gmial.com,Initech,555-2353,2026-07-02,  Inactive 
+,,,,,,
+  , ,,   ,,,
