@@ -1,163 +1,176 @@
-"""Before/after LinkedIn graphic from the REAL test file + REAL pipeline counts."""
+"""Paired before/after LinkedIn montage from REAL file + REAL pipeline run.
 
-import csv
+Same records on both sides (matched by name key), changed fields highlighted,
+site palette + Inter, portrait 1080x1350 for feed presence.
+"""
+
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 from cleaning_engine import create_default_pipeline, load_spreadsheet
 
-W, H = 1200, 627
+BASE = Path(__file__).resolve().parent.parent
+
+# ---- site palette ----
 BG = (246, 248, 252)
 WHITE = (255, 255, 255)
 INK = (15, 30, 51)
 MUTED = (91, 107, 130)
+LINE = (228, 234, 243)
 BRAND = (37, 99, 235)
-RED_BG, RED_BD, RED_TX = (253, 240, 240), (240, 202, 202), (185, 28, 28)
-GRN_BG, GRN_BD, GRN_TX = (234, 250, 243), (191, 230, 214), (5, 105, 90)
+OK = (5, 150, 105)
+OK_SOFT = (230, 246, 240)
+ERR = (220, 38, 38)
+ERR_SOFT = (253, 240, 240)
 NAVY = (15, 30, 51)
 
-FONTS = Path(r"C:\Windows\Fonts")
+W, H = 1080, 1350
+INTER = BASE / "assets" / "fonts" / "Inter.ttf"
+_cache: dict = {}
 
 
-def font(name: str, size: int):
-    try:
-        return ImageFont.truetype(str(FONTS / name), size)
-    except OSError:
-        return ImageFont.load_default()
+def font(size: int, weight: str = "Regular"):
+    key = (size, weight)
+    if key not in _cache:
+        f = ImageFont.truetype(str(INTER), size)
+        try:
+            f.set_variation_by_name(weight.encode())
+        except Exception:
+            pass
+        _cache[key] = f
+    return _cache[key]
 
 
-F_TITLE = font("arialbd.ttf", 54)
-F_SUB = font("arial.ttf", 24)
-F_HEAD = font("arialbd.ttf", 26)
-F_ROW = font("arial.ttf", 21)
-F_PILL = font("arialbd.ttf", 15)
-F_STAT = font("arialbd.ttf", 30)
-F_BRAND = font("arialbd.ttf", 28)
+F_TITLE = lambda: font(66, "ExtraBold")  # noqa: E731
+F_SUB = lambda: font(25, "Regular")  # noqa: E731
+F_BRAND = lambda: font(30, "ExtraBold")  # noqa: E731
+F_TAG = lambda: font(22, "Regular")  # noqa: E731
+F_REF = lambda: font(16, "SemiBold")  # noqa: E731
+F_NAME = lambda: font(25, "Bold")  # noqa: E731
+F_FIELD = lambda: font(21, "Regular")  # noqa: E731
+F_FIX = lambda: font(17, "Bold")  # noqa: E731
+F_STAT = lambda: font(29, "Bold")  # noqa: E731
+
+FIELDS = ["Name", "Email", "Company"]
 
 
-def pill(draw, xy, text: str, bg, fg):
-    x, y = xy
-    w = draw.textlength(text, font=F_PILL) + 20
-    draw.rounded_rectangle([x, y, x + w, y + 26], radius=13, fill=bg)
-    draw.text((x + 10, y + 4), text, font=F_PILL, fill=fg)
-    return w
+def name_of(r: dict) -> str:
+    return f"{r.get('First Name', '').strip()} {r.get('Last Name', '').strip()}".strip()
 
 
-def mess_score(row: dict) -> int:
-    s = 0
-    for v in row.values():
-        if v != v.strip():
-            s += 2
-        if v.isupper() and len(v) > 2:
-            s += 2
-        if v.islower() and "@" in v:
-            s += 1
-    if "gmial" in row.get("Email", "") or "yaho" in row.get("Email", ""):
-        s += 3
-    if row.get("Email", "") in ("not-an-email",) or "@" not in row.get("Email", ""):
-        s += 3
-    return s
+def key_of(r: dict) -> tuple:
+    return (r.get("First Name", "").strip().lower(), r.get("Last Name", "").strip().lower())
 
 
-BASE = Path(__file__).resolve().parent.parent
-src = BASE / "tests" / "fixtures" / "input" / "messy_leads_demo.csv"
-data = load_spreadsheet(src)
-cleaned, tracker = create_default_pipeline().run(data)
-report = tracker.to_report()
-applied = sum(1 for c in report.changes if c.applied)
-n_before, n_after = data.dataframe.shape[0], cleaned.dataframe.shape[0]
-
-raw_rows = list(data.dataframe.to_dict("records"))
-nonempty = [r for r in raw_rows if any(str(v).strip() for v in r.values())]
-messy = sorted(nonempty, key=mess_score, reverse=True)[:4]
-clean_rows = cleaned.dataframe.head(4).to_dict("records")
+def shown(r: dict) -> dict:
+    return {
+        "Name": name_of(r) or "—",
+        "Email": r.get("Email", "").strip() or "—",
+        "Company": r.get("Company", "").strip() or "—",
+    }
 
 
-_MEASURER = Image.new("RGB", (8, 8))
-_MEASURE = ImageDraw.Draw(_MEASURER)
+def main() -> Path:
+    data = load_spreadsheet(BASE / "tests" / "fixtures" / "input" / "messy_leads_demo.csv")
+    cleaned, tracker = create_default_pipeline().run(data)
+    report = tracker.to_report()
+    applied = sum(1 for c in report.changes if c.applied)
+    n_before, n_after = data.dataframe.shape[0], cleaned.dataframe.shape[0]
+
+    raw_rows = list(data.dataframe.to_dict("records"))
+    clean_rows = list(cleaned.dataframe.to_dict("records"))
+    clean_by_key: dict = {}
+    for r in clean_rows:
+        k = key_of(r)
+        if k != ("", "") and k not in clean_by_key:
+            clean_by_key[k] = r
+
+    pairs = []
+    used = set()
+    for j, m in enumerate(raw_rows):
+        k = key_of(m)
+        if k == ("", "") or k not in clean_by_key or k in used:
+            continue
+        used.add(k)
+        c = clean_by_key[k]
+        sm, sc = shown(m), shown(c)
+        diffs = [f for f in FIELDS if sm[f] != sc[f]]
+        if diffs:
+            pairs.append((len(diffs), j + 2, sm, sc, diffs))
+    pairs.sort(reverse=True)
+    pairs = pairs[:5]
+
+    img = Image.new("RGB", (W, H), BG)
+    d = ImageDraw.Draw(img)
+
+    # header
+    d.rounded_rectangle([40, 26, 84, 70], radius=12, fill=BRAND)
+    d.rectangle([52, 36, 72, 44], fill=WHITE)
+    d.rectangle([52, 48, 72, 52], fill=WHITE)
+    d.rectangle([52, 56, 72, 60], fill=WHITE)
+    d.rectangle([58, 36, 62, 60], fill=WHITE)
+    d.text((96, 28), "CleanSheet", font=F_BRAND(), fill=INK)
+    tag = "private beta"
+    d.text((W - 40 - d.textlength(tag, font=F_TAG()), 34), tag, font=F_TAG(), fill=MUTED)
+
+    # title
+    d.text((40, 104), "Messy in. Clean out.", font=F_TITLE(), fill=INK)
+    d.text(
+        (40, 184),
+        "Same 5 records, before and after. Real file, real run.",
+        font=F_SUB(),
+        fill=MUTED,
+    )
+
+    # pairs
+    y = 252
+    LW, CW = 460, 460
+    LX, RX = 40, 580
+    AX = 500  # arrow column center
+    for _ndiffs, rownum, sm, sc, diffs in pairs:
+        # before card
+        d.rounded_rectangle([LX, y, LX + LW, y + 158], radius=14, fill=WHITE, outline=LINE, width=2)
+        d.text((LX + 18, y + 10), f"BEFORE · CSV ROW {rownum}", font=F_REF(), fill=ERR)
+        d.text((LX + 18, y + 36), sm["Name"][:34], font=F_NAME(), fill=INK)
+        d.text((LX + 18, y + 70), sm["Email"][:36], font=F_FIELD(), fill=MUTED)
+        d.text((LX + 18, y + 100), sm["Company"][:36], font=F_FIELD(), fill=MUTED)
+        # arrow + fix count
+        d.text((AX - 16, y + 52), "→", font=font(44, "Bold"), fill=BRAND)
+        label = f"{len(diffs)} fix" + ("es" if len(diffs) > 1 else "")
+        tw = d.textlength(label, font=F_FIX())
+        d.rounded_rectangle([AX - tw / 2 - 10, y + 108, AX + tw / 2 + 10, y + 132], radius=12, fill=(232, 239, 254))
+        d.text((AX - tw / 2, y + 110), label, font=F_FIX(), fill=BRAND)
+        # after card
+        d.rounded_rectangle([RX, y, RX + CW, y + 158], radius=14, fill=WHITE, outline=LINE, width=2)
+        d.text((RX + 18, y + 10), "AFTER", font=F_REF(), fill=OK)
+        name_val = sc["Name"][:34]
+        if "Name" in diffs:
+            w = d.textlength(name_val, font=F_NAME())
+            d.rounded_rectangle(
+                [RX + 12, y + 33, RX + 24 + w, y + 63], radius=8, fill=OK_SOFT
+            )
+        d.text((RX + 18, y + 36), name_val, font=F_NAME(), fill=INK)
+        for i, f in enumerate(("Email", "Company")):
+            tx, ty = RX + 18, y + 70 + i * 30
+            val = sc[f][:36]
+            if f in diffs:
+                w = d.textlength(val, font=F_FIELD())
+                d.rounded_rectangle([tx - 6, ty - 3, tx + w + 6, ty + 25], radius=8, fill=OK_SOFT)
+            d.text((tx, ty), val, font=F_FIELD(), fill=MUTED)
+        y += 178
+
+    # footer stats band
+    d.rectangle([0, H - 96, W, H], fill=NAVY)
+    stat = f"{n_before} rows in  →  {n_after} rows out   ·   {applied} changes applied   ·   every change logged"
+    tw = d.textlength(stat, font=F_STAT())
+    d.text(((W - tw) / 2, H - 68), stat, font=F_STAT(), fill=WHITE)
+
+    out = BASE / "assets" / "cleansheet_before_after.png"
+    img.save(out)
+    print(f"saved {out} ({W}x{H}), pairs={len(pairs)}, before={n_before} after={n_after} applied={applied}")
+    return out
 
 
-def _fit(text: str, max_px: int) -> str:
-    full = len(text)
-    while text and _MEASURE.textlength(text, font=F_ROW) > max_px:
-        text = text[:-1]
-    text = text.rstrip()
-    return text + "…" if len(text) < full else text
-
-
-def short_person(r: dict) -> str:
-    fn = r.get("First Name", "?")[:12]
-    ln = r.get("Last Name", "?")[:12]
-    em = r.get("Email", "?")[:26]
-    co = r.get("Company", "?")[:16]
-    return _fit(f"{fn} {ln} | {em} | {co}", 440)
-
-
-def badges(r: dict) -> list[str]:
-    out = []
-    em = r.get("Email", "")
-    if "@" not in em or em.endswith("@") or " " in em.strip().rstrip("@"):
-        out.append("BAD EMAIL")
-    if any(v != v.strip() for v in r.values()):
-        out.append("SPACES")
-    if any(v.isupper() and len(v) > 2 for v in r.values()):
-        out.append("ALL CAPS")
-    if any(d in em for d in ("gmial", "yaho", "hotmial", "outlok", "gmal")):
-        out.append("TYPO")
-    return out[:2]
-
-
-img = Image.new("RGB", (W, H), BG)
-d = ImageDraw.Draw(img)
-
-# header
-d.rectangle([0, 0, W, 84], fill=WHITE)
-d.text((40, 24), "CleanSheet", font=F_BRAND, fill=INK)
-d.text((880, 30), "cleansheet · private beta", font=F_SUB, fill=MUTED)
-
-# title
-d.text((40, 108), "Messy in. Clean out.", font=F_TITLE, fill=INK)
-d.text((40, 172), f"Real file, real run: {n_before} rows in, {n_after} out, {applied} changes logged.",
-       font=F_SUB, fill=MUTED)
-
-# panels
-PW, PH, PY = 505, 300, 230
-for (px, title, bg, bd, tx) in ((40, "BEFORE", RED_BG, RED_BD, RED_TX),
-                                (655, "AFTER", GRN_BG, GRN_BD, GRN_TX)):
-    d.rounded_rectangle([px, PY, px + PW, PY + PH], radius=16, fill=bg, outline=bd, width=2)
-    d.text((px + 20, PY + 12), title, font=F_HEAD, fill=tx)
-
-# center arrow
-d.text((578, 340), "→", font=font("arialbd.ttf", 64), fill=BRAND)
-
-# before rows
-y = PY + 52
-for r in messy:
-    line = short_person(r)[:52]
-    d.text((60, y), line, font=F_ROW, fill=INK)
-    x = 60
-    for b in badges(r):
-        w = pill(d, (x, y + 26), b, (255, 255, 255), RED_TX)
-        x += w + 8
-    y += 58
-    if y > PY + PH - 40:
-        break
-
-# after rows
-y = PY + 52
-for r in clean_rows:
-    line = short_person(r)[:52]
-    d.text((675, y), line, font=F_ROW, fill=INK)
-    pill(d, (675, y + 26), "FIXED + LOGGED", WHITE, GRN_TX)
-    y += 58
-
-# footer stats band
-d.rectangle([0, H - 88, W, H], fill=NAVY)
-stat = f"{n_before} rows in  →  {n_after} rows out   ·   {applied} changes applied   ·   every change logged"
-tw = d.textlength(stat, font=F_STAT)
-d.text(((W - tw) / 2, H - 66), stat, font=F_STAT, fill=WHITE)
-
-out = BASE / "assets" / "cleansheet_before_after.png"
-img.save(out)
-print(f"saved {out} ({W}x{H}), before={n_before} after={n_after} applied={applied}")
+if __name__ == "__main__":
+    main()
