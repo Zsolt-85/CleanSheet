@@ -88,8 +88,11 @@ The repo includes `render.yaml`, so deployment is a Blueprint import:
 
 Free-tier facts: single instance (matches how the app was tested), sleeps
 after 15 min idle (first visit wakes it in ~1 min), 750 instance-hours/month.
-Stats live in the container's temp storage and reset on redeploy — fine for
-beta, revisit when usage justifies a disk or managed store.
+The SQLite stats file lives in temp storage and resets on redeploy — but
+every analyze/clean also writes one anonymous log line
+(`event=clean mode=default rows_before=20 …`, never filenames), so filter
+the dashboard's Logs tab for `cleansheet-stats` to see real usage across
+restarts. Revisit persistent storage when usage justifies it.
 
 ## Docker (alternative / Cloud Run)
 

@@ -234,6 +234,38 @@ class TestStats:
         resp = client.post("/api/clean", files={"file": ("messy.csv", messy_csv_bytes)})
         assert resp.status_code == 200
 
+    def test_clean_logs_anonymous_line(
+        self, client: TestClient, messy_csv_bytes: bytes, caplog: pytest.LogCaptureFixture
+    ):
+        import logging
+
+        caplog.set_level(logging.INFO, logger="cleansheet.stats")
+        resp = client.post(
+            "/api/clean",
+            files={"file": ("Acme_SECRET_leads.csv", messy_csv_bytes)},
+            data={"mode": "default"},
+        )
+        assert resp.status_code == 200
+        lines = [r.getMessage() for r in caplog.records if r.name == "cleansheet.stats"]
+        assert len(lines) == 1
+        line = lines[0]
+        assert "event=clean" in line and "rows_before=20" in line and "applied=" in line
+        # Filenames can identify clients: must never appear in logs
+        assert "Acme_SECRET_leads" not in line
+        assert ".csv" not in line
+
+    def test_analyze_logs_anonymous_line(
+        self, client: TestClient, messy_csv_bytes: bytes, caplog: pytest.LogCaptureFixture
+    ):
+        import logging
+
+        caplog.set_level(logging.INFO, logger="cleansheet.stats")
+        resp = client.post("/api/analyze", files={"file": ("m.csv", messy_csv_bytes)})
+        assert resp.status_code == 200
+        lines = [r.getMessage() for r in caplog.records if r.name == "cleansheet.stats"]
+        assert len(lines) == 1
+        assert "event=analyze" in lines[0] and "rows=20" in lines[0]
+
     def test_funnel_counts_success_only(self, client: TestClient, messy_csv_bytes: bytes):
         from backend.stats import get_stats
 

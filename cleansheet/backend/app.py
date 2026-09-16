@@ -16,6 +16,7 @@ Security posture:
 
 from __future__ import annotations
 
+import logging
 import secrets
 import tempfile
 import time
@@ -47,6 +48,12 @@ from cleaning_engine.modes import build_pipeline, get_modes_content
 MAX_UPLOAD_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 RESULT_TTL_SECONDS = 30 * 60  # download links live 30 minutes, then wiped
 RATE_LIMIT_PER_MINUTE = 120
+
+# Anonymous usage lines (counts only, never filenames/contents/IPs).
+# Render keeps container logs across restarts and deploys (limited retention),
+# so real usage stays visible even though the SQLite file is ephemeral.
+# Filter the Logs tab for: cleansheet-stats
+stats_log = logging.getLogger("cleansheet.stats")
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -174,6 +181,12 @@ async def analyze(file: UploadFile = File(...)) -> dict[str, Any]:
         )
 
     incr("analyze_calls")
+    stats_log.info(
+        "event=analyze rows=%d cols=%d issues=%d",
+        prof.shape[0],
+        prof.shape[1],
+        sum(len(v) for v in analysis.issues.values()),
+    )
     return {
         "filename": data.filename,
         "rows": prof.shape[0],
@@ -241,6 +254,14 @@ async def clean(
     except Exception:
         # Telemetry must never break a cleaning request.
         pass
+    stats_log.info(
+        "event=clean mode=%s rows_before=%d rows_after=%d applied=%d ms=%.1f",
+        mode,
+        rows_before,
+        rows_after,
+        applied,
+        report.processing_time_ms,
+    )
     return {
         "filename": data.filename,
         "rows_before": rows_before,
