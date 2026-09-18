@@ -4,7 +4,7 @@
 - Language used: _EN / RO (circle one when posting)_
 - Posted URL: _
 - First comment with link done: _yes / no_
-- Image: _real screenshot of big-file results (see post.md IMAGE section)_
+- Image: `image.png` generated (tools/make_post2_graphic.py, real run) ✓
 - Cross-posted: _X yes/no · Reddit yes/no (+sub) · FB group yes/no (+group)_
 - Replies (who + what they said):
   - _
