@@ -28,6 +28,13 @@
     --shadow-sm: 0 2px 8px rgba(15, 30, 51, 0.06);
   }
   * { box-sizing: border-box; }
+  /* Visible keyboard focus on every interactive element */
+  :focus-visible { outline: 3px solid rgba(37, 99, 235, 0.55); outline-offset: 2px; }
+  button, a, summary, [role="button"], [role="radio"] { touch-action: manipulation; }
+  .skip { position: absolute; left: 12px; top: -56px; background: var(--ink); color: #fff;
+    padding: 10px 16px; border-radius: 10px; z-index: 50; font-weight: 700;
+    text-decoration: none; transition: top 0.2s ease; }
+  .skip:focus-visible { top: 12px; color: #fff; }
   body {
     margin: 0;
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -46,12 +53,13 @@
   .langswitch { margin-left: auto; display: flex; background: #fff; border: 1px solid var(--line); border-radius: 999px;
     padding: 3px; box-shadow: var(--shadow-sm); }
   .langswitch button { border: 0; background: none; border-radius: 999px; padding: 6px 14px; font-weight: 700;
-    font-size: 0.82rem; cursor: pointer; color: var(--muted); font-family: inherit; transition: all 0.2s; }
+    font-size: 0.82rem; cursor: pointer; color: var(--muted); font-family: inherit; transition: background 0.2s ease, color 0.2s ease; }
+  .langswitch button:hover { color: var(--ink); }
   .langswitch button.on { background: var(--ink); color: #fff; }
 
   /* ---------- hero ---------- */
   .hero { text-align: center; padding: 30px 0 8px; }
-  .hero h1 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); line-height: 1.12; letter-spacing: -0.03em; margin: 0 0 12px; }
+  .hero h1 { font-size: clamp(1.9rem, 4.5vw, 2.9rem); line-height: 1.12; letter-spacing: -0.03em; margin: 0 0 12px; text-wrap: balance; }
   .hero h1 .accent { background: linear-gradient(90deg, var(--brand), #7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .hero p { color: var(--muted); font-size: 1.06rem; max-width: 620px; margin: 0 auto; }
   .pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
@@ -74,7 +82,7 @@
   .step { flex: 1; padding: 14px 6px; text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--muted);
     position: relative; transition: color 0.25s; }
   .step .n { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #e6ebf4; color: #66788f;
-    align-items: center; justify-content: center; font-size: 0.72rem; margin-right: 6px; transition: all 0.25s; }
+    align-items: center; justify-content: center; font-size: 0.72rem; margin-right: 6px; transition: background 0.25s ease, color 0.25s ease; }
   .step.active { color: var(--brand-dark); }
   .step.active .n { background: var(--brand); color: #fff; }
   .step.done { color: var(--ok); }
@@ -96,6 +104,7 @@
   .filechip.show { display: flex; animation: rise 0.3s ease; }
   .filechip b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .filechip button { margin-left: auto; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 1rem; }
+  .filechip button:hover { color: var(--err); }
 
   /* ---------- buttons ---------- */
   .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
@@ -118,7 +127,7 @@
   .stages.show { display: block; }
   .stages li { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 0.93rem; color: var(--muted); }
   .stages li .dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #c6d2e4; flex: none;
-    display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: all 0.25s; }
+    display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease; }
   .stages li.working { color: var(--ink); }
   .stages li.working .dot { border-color: var(--brand); animation: spin 1s linear infinite; border-top-color: transparent; }
   .stages li.done { color: var(--ink); }
@@ -127,7 +136,10 @@
 
   /* ---------- stats + tables ---------- */
   .panel { margin-top: 20px; animation: rise 0.4s ease; }
-  .panel h2 { font-size: 1.25rem; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .panel h2 { font-size: 1.25rem; letter-spacing: -0.01em; margin: 0 0 4px; text-wrap: balance; }
+  .panel h2 .fname { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+  .tablewrap { overflow-x: auto; margin: 10px 0; }
+  .tablewrap table.data { margin: 0; }
   .panel .lede { color: var(--muted); margin: 0 0 12px; font-size: 0.94rem; }
   .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 14px 0; }
   .stat { background: #f8fafd; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
@@ -145,7 +157,7 @@
   /* ---------- before / after ---------- */
   .before-after { display: flex; align-items: center; gap: 16px; justify-content: center; margin: 18px 0 6px; flex-wrap: wrap; }
   .bignum { text-align: center; background: #f8fafd; border: 1px solid var(--line); border-radius: 14px; padding: 14px 26px; min-width: 150px; }
-  .bignum .v { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; }
+  .bignum .v { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .bignum .k { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
   .bignum.after { background: var(--ok-soft); border-color: #bfe6d6; }
   .bignum.after .v { color: var(--ok); }
@@ -153,14 +165,15 @@
 
   .downloads { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
   .downloads a { text-decoration: none; border-radius: 12px; padding: 13px 22px; font-weight: 700; font-size: 0.98rem;
-    transition: transform 0.12s, box-shadow 0.2s; display: inline-block; }
+    transition: transform 0.12s, box-shadow 0.2s, filter 0.2s; display: inline-block; }
+  .downloads a:hover { filter: brightness(1.06); }
   .downloads a:active { transform: scale(0.98); }
   .dl-main { background: linear-gradient(180deg, #10b981, #047857); color: #fff; box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35); }
   .dl-sub { background: #eef2f8; color: var(--ink); }
 
   /* ---------- mode cards ---------- */
   .modecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
-  .modecard { border: 2px solid var(--line); border-radius: 14px; padding: 14px 15px; cursor: pointer; transition: all 0.2s; background: #fff; }
+  .modecard { border: 2px solid var(--line); border-radius: 14px; padding: 14px 15px; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; background: #fff; }
   .modecard:hover { border-color: #9db8ea; }
   .modecard.selected { border-color: var(--brand); background: #f4f8ff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15); }
   .modecard b { display: block; font-size: 0.98rem; }
@@ -168,6 +181,7 @@
   .modecard .warn { color: var(--warn); font-weight: 600; }
   details.modes { margin-top: 16px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: #fbfcff; }
   details.modes summary { cursor: pointer; font-weight: 700; font-size: 0.93rem; }
+  details.modes summary:hover { color: var(--brand-dark); }
   details.modes ul { margin: 8px 0; padding-left: 20px; font-size: 0.9rem; color: #33415c; }
 
   /* ---------- trust ---------- */
@@ -189,6 +203,7 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#app" data-i18n="skip">Skip to main content</a>
 <div class="wrap">
 
   <header class="top">
@@ -200,7 +215,7 @@
         <line x1="8" y1="3" x2="8" y2="17" stroke="#fff" stroke-width="1.8"/>
       </svg>
     </span>
-    <span class="brand">CleanSheet<small>SPREADSHEET CLEANER</small></span>
+    <span class="brand" translate="no">CleanSheet<small>SPREADSHEET CLEANER</small></span>
     <div class="langswitch" role="group" aria-label="Language / Limbă">
       <button id="lang-en" class="on">EN</button><button id="lang-ro">RO</button>
     </div>
@@ -221,7 +236,7 @@
     </div>
   </section>
 
-  <main class="app" id="app">
+  <main class="app" id="app" tabindex="-1">
     <div class="steps" id="steps">
       <div class="step active" data-step="1"><span class="n">1</span><span class="lbl" data-i18n="step_1">Upload</span></div>
       <div class="step" data-step="2"><span class="n">2</span><span class="lbl" data-i18n="step_2">Review issues</span></div>
@@ -237,11 +252,11 @@
           </svg>
         </div>
         <div id="drop-label" data-i18n="drop_idle">Drop your spreadsheet here, or click to browse</div>
-        <div id="drop-hint" data-i18n="drop_hint">Excel (.xlsx) or CSV · max 25 MB · deleted after download</div>
+        <div id="drop-hint" data-i18n="drop_hint">Excel (.xlsx) or CSV · max 25&nbsp;MB · deleted after download</div>
         <input id="file" type="file" accept=".csv,.xlsx,.xls">
       </div>
       <div class="filechip" id="filechip">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <rect x="2" y="3" width="16" height="14" rx="2.5" stroke="#059669" stroke-width="1.8"/>
           <line x1="2" y1="8" x2="18" y2="8" stroke="#059669" stroke-width="1.8"/>
         </svg>
@@ -264,9 +279,9 @@
       <div id="analysis" class="panel" hidden></div>
 
       <div id="cleanbox" class="panel" hidden>
-        <h2 data-i18n="mode_title">Choose how thorough to be</h2>
+        <h2 id="mode-title" data-i18n="mode_title">Choose how thorough to be</h2>
         <p class="lede" data-i18n="mode_lede">All modes remove duplicates and empty rows and fix whitespace. They differ only in judgment calls.</p>
-        <div class="modecards" id="modecards"></div>
+        <div class="modecards" id="modecards" role="radiogroup" aria-labelledby="mode-title"></div>
         <details class="modes">
           <summary data-i18n="mode_details">What is the exact difference between modes?</summary>
           <div id="modes-table"></div>
@@ -279,7 +294,7 @@
 
       <div id="results" class="panel" hidden></div>
       <div id="status" aria-live="polite"></div>
-      <div class="errorbox" id="errorbox"></div>
+      <div class="errorbox" id="errorbox" role="alert" tabindex="-1"></div>
     </div>
   </main>
 
@@ -296,6 +311,9 @@
 <script>
 const I18N = {
   en: {
+    skip: 'Skip to main content',
+    drop_aria: 'Upload spreadsheet',
+    fileclear_aria: 'Remove file',
     hero_title: 'Clean your customer list <span class="accent">in seconds.</span>',
     hero_sub: 'Upload your Excel or CSV file. CleanSheet finds duplicates, invalid emails and messy formatting — fixes them, and shows you every single change.',
     pill_1: 'No sign-up', pill_2: 'Files auto-deleted', pill_3: 'Every change logged',
@@ -305,7 +323,7 @@ const I18N = {
     step_1: 'Upload', step_2: 'Review issues', step_3: 'Clean', step_4: 'Download',
     drop_idle: 'Drop your spreadsheet here, or click to browse',
     drop_ready: 'File ready — or drop a different one to replace it',
-    drop_hint: 'Excel (.xlsx) or CSV · max 25 MB · deleted after download',
+    drop_hint: 'Excel (.xlsx) or CSV · max 25 MB · deleted after download',
     st_read: 'Reading file', st_dupes: 'Detecting duplicates', st_emails: 'Checking emails',
     st_format: 'Checking formatting', st_profile: 'Profiling columns',
     btn_analyze: 'Analyze my file', btn_clean: 'Clean my spreadsheet',
@@ -315,8 +333,8 @@ const I18N = {
     mode_warn_short: 'Caution: assumes month-first dates.',
     always_true: 'Always true, every mode:',
     modes_error: 'Could not load mode details.',
-    analyzing: 'Analyzing your spreadsheet...',
-    cleaning: 'Cleaning... this usually takes a few seconds.',
+    analyzing: 'Analyzing your spreadsheet…',
+    cleaning: 'Cleaning… this usually takes a few seconds.',
     found_1: 'Found 1 issue in ', found_n: 'Found {n} issues in ',
     scanned: ' rows &times; {c} columns scanned. Here is what needs attention:',
     suggested: 'Suggested fix:',
@@ -342,6 +360,9 @@ const I18N = {
     footer: 'CleanSheet · files auto-delete after download (links expire after 30 minutes)'
   },
   ro: {
+    skip: 'Sari la conținut',
+    drop_aria: 'Încarcă tabelul',
+    fileclear_aria: 'Elimină fișierul',
     hero_title: 'Curăță-ți lista de clienți <span class="accent">în câteva secunde.</span>',
     hero_sub: 'Încarcă fișierul Excel sau CSV. CleanSheet găsește duplicatele, emailurile invalide și formatările haotice — le corectează și îți arată fiecare modificare.',
     pill_1: 'Fără cont', pill_2: 'Fișiere șterse automat', pill_3: 'Fiecare modificare înregistrată',
@@ -351,7 +372,7 @@ const I18N = {
     step_1: 'Încarcă', step_2: 'Verifică problemele', step_3: 'Curăță', step_4: 'Descarcă',
     drop_idle: 'Trage tabelul aici sau apasă pentru a-l alege',
     drop_ready: 'Fișier gata — sau trage altul pentru a-l înlocui',
-    drop_hint: 'Excel (.xlsx) sau CSV · max 25 MB · șters după descărcare',
+    drop_hint: 'Excel (.xlsx) sau CSV · max 25 MB · șters după descărcare',
     st_read: 'Se citește fișierul', st_dupes: 'Se detectează duplicatele', st_emails: 'Se verifică emailurile',
     st_format: 'Se verifică formatarea', st_profile: 'Se profilează coloanele',
     btn_analyze: 'Analizează fișierul', btn_clean: 'Curăță tabelul',
@@ -361,8 +382,8 @@ const I18N = {
     mode_warn_short: 'Atenție: presupune date de tip lună-zi.',
     always_true: 'Valabil întotdeauna, în orice mod:',
     modes_error: 'Nu s-au putut încărca detaliile modurilor.',
-    analyzing: 'Se analizează tabelul...',
-    cleaning: 'Se curăță... durează de obicei câteva secunde.',
+    analyzing: 'Se analizează tabelul…',
+    cleaning: 'Se curăță… durează de obicei câteva secunde.',
     found_1: 'Am găsit o problemă în ', found_n: 'Am găsit {n} probleme în ',
     scanned: ' rânduri &times; {c} coloane scanate. Iată ce necesită atenție:',
     suggested: 'Remediere sugerată:',
@@ -403,8 +424,19 @@ const OP_RO = {
 };
 
 let lang = 'en';
-try { lang = localStorage.getItem('cleansheet-lang') || 'en'; } catch (e) {}
+try { lang = localStorage.getItem('cleansheet-lang') || ''; } catch (e) {}
+if (!lang) {
+  try {
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+    lang = nav.toLowerCase().startsWith('ro') ? 'ro' : 'en';
+  } catch (e) { lang = 'en'; }
+}
 if (lang !== 'ro') lang = 'en';
+
+function scrollToEl(el) {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+}
 
 function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
 function prettyIssue(k) {
@@ -459,6 +491,8 @@ function applyLang() {
   });
   if (!document.getElementById('counter').hidden) renderCounter();
   document.getElementById('hero-title').innerHTML = t('hero_title');
+  drop.setAttribute('aria-label', t('drop_aria'));
+  document.getElementById('fileclear').setAttribute('aria-label', t('fileclear_aria'));
   document.getElementById('lang-en').classList.toggle('on', lang === 'en');
   document.getElementById('lang-ro').classList.toggle('on', lang === 'ro');
   if (!currentFile) dropLabel.textContent = t('drop_idle');
@@ -488,6 +522,7 @@ function showError(msg) {
   errorbox.textContent = msg;
   errorbox.classList.add('show');
   statusEl.textContent = '';
+  errorbox.focus({ preventScroll: true });
 }
 function clearError() { errorbox.classList.remove('show'); errorbox.textContent = ''; }
 
@@ -514,7 +549,7 @@ function setFile(f) {
 }
 
 drop.addEventListener('click', () => fileInput.click());
-drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
 fileInput.addEventListener('change', () => setFile(fileInput.files[0] || null));
 document.getElementById('fileclear').addEventListener('click', (e) => { e.stopPropagation(); fileInput.value = ''; setFile(null); });
 ['dragover', 'dragenter'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
@@ -556,7 +591,7 @@ function stat(v, k, alert) {
 function renderAnalysis(a) {
   const totalIssues = Object.values(a.issue_counts).reduce((s, v) => s + v, 0);
   const head = totalIssues === 1 ? t('found_1') : t('found_n').replace('{n}', totalIssues);
-  let html = '<h2>' + esc(head) + esc(a.filename) + '</h2>';
+  let html = '<h2>' + esc(head) + '<span class="fname">' + esc(a.filename) + '</span></h2>';
   html += '<p class="lede">' + a.rows + t('scanned').replace('{c}', a.columns) + '</p>';
   html += '<div class="statgrid">';
   html += stat(a.rows, t('stat_rows'), false);
@@ -564,18 +599,18 @@ function renderAnalysis(a) {
   html += stat(a.empty_rows, t('stat_empty'), a.empty_rows > 0);
   html += stat(a.empty_cells, t('stat_cells'), false);
   html += '</div>';
-  html += '<table class="data"><tr><th>' + esc(t('th_problem')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
+  html += '<div class="tablewrap"><table class="data"><tr><th>' + esc(t('th_problem')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
   for (const [k, v] of Object.entries(a.issue_counts)) html += '<tr><td>' + esc(prettyIssue(k)) + '</td><td class="num">' + v + '</td></tr>';
-  html += '</table>';
+  html += '</table></div>';
   if (a.facets && a.facets.length) {
     html += '<h3>' + esc(t('facets_title')) + '</h3>';
     a.facets.forEach((f) => {
       html += '<details class="modes"><summary>' + esc(f.name) + ' — ' + f.unique + ' ' + esc(t('facet_unique')) + '</summary>';
-      html += '<table class="data"><tr><th>' + esc(t('facet_value')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
+      html += '<div class="tablewrap"><table class="data"><tr><th>' + esc(t('facet_value')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
       f.values.forEach((row) => {
         html += '<tr><td>' + esc(row.value) + '</td><td class="num">' + row.count + '</td></tr>';
       });
-      html += '</table></details>';
+      html += '</table></div></details>';
     });
   }
   if (a.suggested_operations.length) {
@@ -601,7 +636,7 @@ btnAnalyze.addEventListener('click', async () => {
     renderAnalysis(a);
     cleanboxEl.hidden = false;
     setStep(2);
-    document.getElementById('app').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    scrollToEl(document.getElementById('app'));
   } catch (err) {
     showError(err.message);
   } finally {
@@ -618,9 +653,9 @@ function renderClean(c) {
   html += '<div class="bignum after"><div class="v">' + c.rows_after + '</div><div class="k">' + esc(t('rows_after')) + '</div></div>';
   html += '</div>';
   html += '<p class="lede">' + esc(t('applied_line').replace('{a}', c.applied_changes).replace('{p}', pending)) + '</p>';
-  html += '<table class="data"><tr><th>' + esc(t('th_fixed')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
+  html += '<div class="tablewrap"><table class="data"><tr><th>' + esc(t('th_fixed')) + '</th><th class="num">' + esc(t('th_count')) + '</th></tr>';
   for (const [k, v] of Object.entries(c.by_rule)) html += '<tr><td>' + esc(prettyOp(k)) + '</td><td class="num">' + v + '</td></tr>';
-  html += '</table>';
+  html += '</table></div>';
   html += '<div class="downloads">';
   html += '<a class="dl-main" href="' + c.download_cleaned_url + '">' + esc(t('dl_cleaned')) + '</a>';
   html += '<a class="dl-sub" href="' + c.download_report_url + '">' + esc(t('dl_report')) + '</a>';
@@ -643,7 +678,7 @@ btnClean.addEventListener('click', async () => {
     renderClean(c);
     loadCounter();
     setStep(4);
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    scrollToEl(resultsEl);
   } catch (err) {
     showError(err.message);
   } finally {
@@ -682,7 +717,7 @@ function loadModes() {
         card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
         modecardsEl.appendChild(card);
       });
-      let html = '<table class="data"><tr><th>' + esc(t('th_problem')) + '</th>';
+      let html = '<div class="tablewrap"><table class="data"><tr><th>' + esc(t('th_problem')) + '</th>';
       data.modes.forEach((m) => { html += '<th>' + esc(m.name) + '</th>'; });
       html += '</tr>';
       data.comparison.forEach((row) => {
@@ -690,7 +725,7 @@ function loadModes() {
         data.modes.forEach((m) => { html += '<td>' + esc(row[m.id]) + '</td>'; });
         html += '</tr>';
       });
-      html += '</table>';
+      html += '</table></div>';
       document.getElementById('modes-table').innerHTML = html;
       document.getElementById('modes-guarantees').innerHTML =
         '<p><strong>' + esc(t('always_true')) + '</strong></p><ul>' +
