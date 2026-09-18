@@ -3,26 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CleanSheet terms of use: free private beta, always review the change report before business use.">
 <title>CleanSheet — Terms of Use</title>
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 20px 64px; color: #0f1e33; line-height: 1.6; }
+  :focus-visible { outline: 3px solid rgba(37, 99, 235, 0.55); outline-offset: 2px; }
+  button, a { touch-action: manipulation; }
+  .skip { position: absolute; left: 12px; top: -56px; background: #0f1e33; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+  .skip:focus-visible { top: 12px; color: #fff; }
   .lang { text-align: right; margin-bottom: 8px; }
   .lang button { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 700; }
+  .lang button:hover { border-color: #2563eb; color: #2563eb; }
   .lang button.on { background: #2563eb; color: #fff; border-color: #2563eb; }
-  h1 { letter-spacing: -0.02em; }
+  .lang button.on:hover { color: #fff; }
+  h1 { letter-spacing: -0.02em; text-wrap: balance; }
   a { color: #2563eb; }
+  a:hover { color: #1d4ed8; }
   .back { display: inline-block; margin-bottom: 12px; }
 </style>
 </head>
 <body>
-<div class="lang">
+<a class="skip" id="skip" href="#main">Skip to main content</a>
+<div class="lang" role="group" aria-label="Language / Limbă">
   <button id="btn-en" class="on">EN</button>
   <button id="btn-ro">RO</button>
 </div>
-<a class="back" href="/">← CleanSheet</a>
+<main id="main" tabindex="-1">
+<a class="back" href="/">← <span translate="no">CleanSheet</span></a>
 <div id="en">
 <h1>Terms of Use</h1>
-<p><small>Last updated: September 2026. CleanSheet is currently in private beta and free to use.</small></p>
+<p><small>Last updated: September 2026. <span translate="no">CleanSheet</span> is currently in private beta and free to use.</small></p>
 <h2>The service</h2>
 <p>CleanSheet automatically cleans spreadsheet files (CSV/XLSX): it removes duplicates and empty rows, fixes whitespace, capitalization, common email typos and unambiguous dates, and produces a change report. Cleaning modes are described in the app — including what each mode does <em>not</em> do.</p>
 <h2>Beta disclaimer — please read</h2>
@@ -30,14 +40,14 @@
 <h2>Acceptable use</h2>
 <ul>
   <li>Only upload files you have the right to process. You are responsible for complying with data-protection law for any personal data you upload.</li>
-  <li>Do not abuse the service (e.g. automated bulk uploads evading the rate limits). Max file size is 25 MB.</li>
+  <li>Do not abuse the service (e.g. automated bulk uploads evading the rate limits). Max file size is 25&nbsp;MB.</li>
 </ul>
 <h2>Availability and files</h2>
 <p>The service may change or go offline without notice during beta. Result download links expire after 30 minutes and files are deleted after download — download promptly and keep your own copies.</p>
 </div>
 <div id="ro" hidden>
 <h1>Condiții de utilizare</h1>
-<p><small>Ultima actualizare: septembrie 2026. CleanSheet este în beta privat și gratuit.</small></p>
+<p><small>Ultima actualizare: septembrie 2026. <span translate="no">CleanSheet</span> este în beta privat și gratuit.</small></p>
 <h2>Serviciul</h2>
 <p>CleanSheet curăță automat fișiere de tip tabel (CSV/XLSX): elimină duplicatele și rândurile goale, corectează spațiile, majusculele, greșelile frecvente din emailuri și datele fără ambiguitate, și produce un raport al modificărilor. Modurile de curățare sunt descrise în aplicație — inclusiv ce <em>nu</em> face fiecare mod.</p>
 <h2>Notă beta — vă rugăm citiți</h2>
@@ -45,11 +55,12 @@
 <h2>Utilizare acceptabilă</h2>
 <ul>
   <li>Încărcați doar fișiere pe care aveți dreptul să le procesați. Sunteți responsabil de respectarea legislației privind protecția datelor pentru datele personale încărcate.</li>
-  <li>Nu abuzați serviciul (ex. încărcări automate în masă pentru eludarea limitelor). Dimensiunea maximă este 25 MB.</li>
+  <li>Nu abuzați serviciul (ex. încărcări automate în masă pentru eludarea limitelor). Dimensiunea maximă este 25&nbsp;MB.</li>
 </ul>
 <h2>Disponibilitate și fișiere</h2>
 <p>Serviciul se poate modifica sau poate fi oprit fără preaviz în perioada beta. Linkurile de descărcare expiră după 30 de minute, iar fișierele sunt șterse după descărcare — descărcați prompt și păstrați-vă propriile copii.</p>
 </div>
+</main>
 <script>
 const en = document.getElementById('en'), ro = document.getElementById('ro');
 const bEn = document.getElementById('btn-en'), bRo = document.getElementById('btn-ro');
@@ -62,7 +73,23 @@ function pick(lang) {
 }
 bEn.addEventListener('click', () => pick('en'));
 bRo.addEventListener('click', () => pick('ro'));
-try { if (localStorage.getItem('cleansheet-lang') === 'ro') pick('ro'); } catch (e) {}
+document.getElementById('skip').textContent = document.documentElement.lang === 'ro' ? 'Sari la conținut' : 'Skip to main content';
+const _origPick = pick;
+pick = function (lang) {
+  _origPick(lang);
+  document.getElementById('skip').textContent = lang === 'ro' ? 'Sari la conținut' : 'Skip to main content';
+};
+function detectLang() {
+  try {
+    const stored = localStorage.getItem('cleansheet-lang');
+    if (stored === 'ro' || stored === 'en') return stored;
+  } catch (e) {}
+  try {
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+    return nav.toLowerCase().startsWith('ro') ? 'ro' : 'en';
+  } catch (e) { return 'en'; }
+}
+pick(detectLang());
 </script>
 </body>
 </html>

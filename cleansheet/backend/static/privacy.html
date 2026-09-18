@@ -3,26 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CleanSheet privacy policy: no accounts, no storage, files auto-deleted after download. Anonymous counters only.">
 <title>CleanSheet — Privacy Policy</title>
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 20px 64px; color: #0f1e33; line-height: 1.6; }
+  :focus-visible { outline: 3px solid rgba(37, 99, 235, 0.55); outline-offset: 2px; }
+  button, a { touch-action: manipulation; }
+  .skip { position: absolute; left: 12px; top: -56px; background: #0f1e33; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+  .skip:focus-visible { top: 12px; color: #fff; }
   .lang { text-align: right; margin-bottom: 8px; }
   .lang button { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 700; }
+  .lang button:hover { border-color: #2563eb; color: #2563eb; }
   .lang button.on { background: #2563eb; color: #fff; border-color: #2563eb; }
-  h1 { letter-spacing: -0.02em; }
+  .lang button.on:hover { color: #fff; }
+  h1 { letter-spacing: -0.02em; text-wrap: balance; }
   a { color: #2563eb; }
+  a:hover { color: #1d4ed8; }
   .back { display: inline-block; margin-bottom: 12px; }
 </style>
 </head>
 <body>
-<div class="lang">
+<a class="skip" id="skip" href="#main">Skip to main content</a>
+<div class="lang" role="group" aria-label="Language / Limbă">
   <button id="btn-en" class="on">EN</button>
   <button id="btn-ro">RO</button>
 </div>
-<a class="back" href="/">← CleanSheet</a>
+<main id="main" tabindex="-1">
+<a class="back" href="/">← <span translate="no">CleanSheet</span></a>
 <div id="en">
 <h1>Privacy Policy</h1>
-<p><small>Last updated: September 2026. CleanSheet is currently in private beta.</small></p>
+<p><small>Last updated: September 2026. <span translate="no">CleanSheet</span> is currently in private beta.</small></p>
 <h2>What we process</h2>
 <p>When you upload a spreadsheet, our server reads it in memory, cleans it, and generates a cleaned file plus a change report for you to download. That is the entire processing.</p>
 <h2>What we do NOT do</h2>
@@ -40,7 +50,7 @@
 </div>
 <div id="ro" hidden>
 <h1>Politica de confidențialitate</h1>
-<p><small>Ultima actualizare: septembrie 2026. CleanSheet este în beta privat.</small></p>
+<p><small>Ultima actualizare: septembrie 2026. <span translate="no">CleanSheet</span> este în beta privat.</small></p>
 <h2>Ce procesăm</h2>
 <p>Când încărcați un tabel, serverul nostru îl citește în memorie, îl curăță și generează fișierul curățat plus raportul de modificări, pentru descărcare. Aceasta este întreaga procesare.</p>
 <h2>Ce NU facem</h2>
@@ -56,6 +66,7 @@
 <h2>Solicitări privind datele</h2>
 <p>Pentru că nu se stochează nimic, în general nu există nimic de exportat sau șters — fișierele dispar singure. Dacă credeți că ceva a fost păstrat din greșeală, contactați-ne prin canalul prin care ați primit invitația beta și vom investiga.</p>
 </div>
+</main>
 <script>
 const en = document.getElementById('en'), ro = document.getElementById('ro');
 const bEn = document.getElementById('btn-en'), bRo = document.getElementById('btn-ro');
@@ -68,7 +79,23 @@ function pick(lang) {
 }
 bEn.addEventListener('click', () => pick('en'));
 bRo.addEventListener('click', () => pick('ro'));
-try { if (localStorage.getItem('cleansheet-lang') === 'ro') pick('ro'); } catch (e) {}
+document.getElementById('skip').textContent = document.documentElement.lang === 'ro' ? 'Sari la conținut' : 'Skip to main content';
+const _origPick = pick;
+pick = function (lang) {
+  _origPick(lang);
+  document.getElementById('skip').textContent = lang === 'ro' ? 'Sari la conținut' : 'Skip to main content';
+};
+function detectLang() {
+  try {
+    const stored = localStorage.getItem('cleansheet-lang');
+    if (stored === 'ro' || stored === 'en') return stored;
+  } catch (e) {}
+  try {
+    const nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+    return nav.toLowerCase().startsWith('ro') ? 'ro' : 'en';
+  } catch (e) { return 'en'; }
+}
+pick(detectLang());
 </script>
 </body>
 </html>

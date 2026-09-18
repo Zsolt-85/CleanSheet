@@ -1,6 +1,6 @@
 # Notes — 2026-09-18 proof post
 
-- Status: `draft` (→ scheduled → posted). Recommended slot: Tue 9/22 morning EU.
+- Status: `scheduled` → Tue 2026-09-22 ~09:00 EU (post + first comment + replies hour; X/Reddit/FB same day; Christian ping after).
 - Language used: _EN / RO (circle one when posting)_
 - Posted URL: _
 - First comment with link done: _yes / no_
