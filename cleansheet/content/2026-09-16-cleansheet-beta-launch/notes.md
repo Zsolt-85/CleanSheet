@@ -5,7 +5,7 @@
 - Posted URL: _
 - First comment with link done: _yes / no_
 - Replies (who + what they said):
-  - _
+  - Christian Schneider (ex-colleague, now consulting, Hannover): private message sent 9/18, warm reconnect + beta ask — no reply yet
 - Files received:
   - _
 - Discovery answers (job? current workaround? time spent? would pay?):
@@ -16,5 +16,8 @@
   - Post (9/16): 331 impressions, 7 engagements (~2.1%); day1 151 imp/5 eng, day2 183 imp/2 eng — still being served day 2
   - Profile total: 334 impressions, 151 members reached; followers 1341 (+0 new)
   - Audience: automotive circle (Arad 20%, Timisoara 12%; Joyson/HELLA/Meteor; 42% motor vehicle mfg) — no out-of-network signal
+- Final (export 9/12–9/18): post 346 imp / 7 eng (+15 imp, +0 eng); day3 (9/18) only 14 imp / 0 eng — FLATLINED, post declared done
+  - First hint of outside reach: Business Consulting 4% + Hannover region 9% in content viewers (new vs first export) — possibly Christian's circle if the message went out
+  - Totals: 349 impressions, 160 reached, 1341 followers (+0), 0 files, 0 strangers converted
 - Follow-ups to send:
   - _
