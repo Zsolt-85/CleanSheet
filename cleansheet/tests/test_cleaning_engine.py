@@ -67,6 +67,26 @@ class TestLoader:
         with pytest.raises(SpreadsheetLoadError):
             load_spreadsheet(Path("nonexistent.csv"))
 
+    def _write_workbook(self, path: Path) -> None:
+        import pandas as pd
+
+        with pd.ExcelWriter(path, engine="openpyxl") as writer:
+            pd.DataFrame({"Name": ["Vlad", "Ana"]}).to_excel(writer, sheet_name="Leads", index=False)
+            pd.DataFrame({"Note": ["x"]}).to_excel(writer, sheet_name="Notes", index=False)
+            pd.DataFrame({"Old": ["y"]}).to_excel(writer, sheet_name="Archive", index=False)
+
+    def test_multisheet_counts_sheets_and_uses_first(self, tmp_path: Path):
+        p = tmp_path / "three.xlsx"
+        self._write_workbook(p)
+        data = load_spreadsheet(p)
+        assert data.sheet_count == 3
+        assert data.sheet_name == "Leads"
+        assert list(data.dataframe.columns) == ["Name"]
+
+    def test_csv_counts_single_sheet(self, messy_contacts_path: Path):
+        data = load_spreadsheet(messy_contacts_path)
+        assert data.sheet_count == 1
+
     def test_from_bytes_preserves_filename(self, messy_contacts_path: Path):
         from cleaning_engine import load_spreadsheet_from_bytes
 
@@ -207,6 +227,13 @@ class TestProfiler:
         assert analysis.suggested_operations
         # Should detect duplicates
         assert "duplicate_rows" in analysis.issues or any("duplicate" in k for k in analysis.issues)
+
+    def test_profile_carries_sheet_count(self, tmp_path: Path):
+        with pd.ExcelWriter(tmp_path / "two.xlsx", engine="openpyxl") as writer:
+            pd.DataFrame({"Name": ["Vlad"]}).to_excel(writer, sheet_name="Leads", index=False)
+            pd.DataFrame({"Note": ["x"]}).to_excel(writer, sheet_name="Notes", index=False)
+        profile = profile_spreadsheet(load_spreadsheet(tmp_path / "two.xlsx"))
+        assert profile.sheet_count == 2
 
     def test_markers_count_as_nulls_not_values(self):
         from cleaning_engine.models import SpreadsheetData
@@ -649,6 +676,33 @@ class TestExporter:
         changes = pd.read_excel(output, sheet_name="Changes")
         assert changes.loc[0, "original"] == "··Vlad··"
         assert changes.loc[0, "new"] == "Vlad"
+
+    def _summary_rows(self, path: Path) -> dict:
+        summary = pd.read_excel(path, sheet_name="Summary")
+        return dict(zip(summary["Metric"].astype(str), summary["Value"].astype(str)))
+
+    def test_report_stamps_multisheet_source(self, tmp_path: Path):
+        source = SpreadsheetData(
+            dataframe=pd.DataFrame({"A": ["x"]}),
+            filename="two.xlsx",
+            file_type="xlsx",
+            sheet_name="Leads",
+            sheet_count=3,
+        )
+        output = tmp_path / "report.xlsx"
+        export_report(ChangeTracker(), output, source=source)
+        rows = self._summary_rows(output)
+        assert rows["Sheets in file"] == "3"
+        assert rows["Sheet cleaned"] == "Leads"
+
+    def test_report_omits_stamp_for_single_sheet(
+        self, messy_contacts_data: SpreadsheetData, tmp_path: Path
+    ):
+        output = tmp_path / "report.xlsx"
+        export_report(ChangeTracker(), output, source=messy_contacts_data)
+        rows = self._summary_rows(output)
+        assert "Sheets in file" not in rows
+        assert "Sheet cleaned" not in rows
 
 
 class TestGoldenFixtures:

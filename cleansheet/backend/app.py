@@ -189,6 +189,8 @@ async def analyze(file: UploadFile = File(...)) -> dict[str, Any]:
     )
     return {
         "filename": data.filename,
+        "sheet_count": data.sheet_count,
+        "sheet_name": data.sheet_name,
         "rows": prof.shape[0],
         "columns": prof.shape[1],
         "empty_rows": prof.empty_rows,
@@ -234,7 +236,7 @@ async def clean(
         # Reuse the engine's exporter: cleaned file + multi-sheet
         # report (Changes / Summary / By Rule)
         export_cleaned(cleaned_data, cleaned_path)
-        export_report(report, report_path)
+        export_report(report, report_path, source=cleaned_data)
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to generate output files.")
 
@@ -264,6 +266,8 @@ async def clean(
     )
     return {
         "filename": data.filename,
+        "sheet_count": data.sheet_count,
+        "sheet_name": data.sheet_name,
         "rows_before": rows_before,
         "rows_after": rows_after,
         "total_changes": len(report.changes),

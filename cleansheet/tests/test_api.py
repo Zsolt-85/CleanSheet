@@ -27,6 +27,17 @@ def messy_csv_bytes() -> bytes:
     return (Path(__file__).parent / "fixtures" / "input" / "messy_contacts.csv").read_bytes()
 
 
+@pytest.fixture
+def multisheet_xlsx_bytes() -> bytes:
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+        pd.DataFrame({"Name": ["Vlad", "Ana"], "Email": ["v@x.com", "a@x.com"]}).to_excel(
+            writer, sheet_name="Leads", index=False
+        )
+        pd.DataFrame({"Note": ["x"]}).to_excel(writer, sheet_name="Notes", index=False)
+    return buf.getvalue()
+
+
 def _upload(client: TestClient, content: bytes, filename: str):  # type: ignore[no-untyped-def]
     return client.post("/api/analyze", files={"file": (filename, content)})
 
@@ -88,6 +99,13 @@ class TestAnalyze:
         resp = client.post("/api/analyze", files={"file": ("bad.xlsx", bytes(range(256)) * 10)})
         assert resp.status_code == 400
 
+    def test_analyze_reports_sheet_count(self, client: TestClient, multisheet_xlsx_bytes: bytes):
+        resp = client.post("/api/analyze", files={"file": ("two.xlsx", multisheet_xlsx_bytes)})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["sheet_count"] == 2
+        assert data["sheet_name"] == "Leads"
+
 
 class TestClean:
     def test_clean_and_download(self, client: TestClient, messy_csv_bytes: bytes):
@@ -123,6 +141,17 @@ class TestClean:
         # Files are single-use: second download is gone
         assert client.get(data["download_cleaned_url"]).status_code == 404
         assert client.get(data["download_report_url"]).status_code == 404
+
+    def test_clean_reports_sheet_count(self, client: TestClient, multisheet_xlsx_bytes: bytes):
+        resp = client.post(
+            "/api/clean",
+            files={"file": ("two.xlsx", multisheet_xlsx_bytes)},
+            data={"mode": "default"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["sheet_count"] == 2
+        assert data["sheet_name"] == "Leads"
 
     def test_clean_conservative_mode(self, client: TestClient, messy_csv_bytes: bytes):
         resp = client.post(

@@ -177,6 +177,7 @@ def profile_spreadsheet(data: SpreadsheetData) -> SpreadsheetProfile:
         filename=data.filename,
         shape=(rows, cols),
         columns=column_profiles,
+        sheet_count=data.sheet_count,
         empty_rows=empty_rows,
         duplicate_rows=duplicate_rows,
         total_cells=total_cells,

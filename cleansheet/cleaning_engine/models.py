@@ -40,6 +40,7 @@ class SpreadsheetData:
     filename: str
     file_type: str  # "csv" or "xlsx"
     sheet_name: str | None = None
+    sheet_count: int = 1
     original_shape: tuple[int, int] = field(init=False)
 
     def __post_init__(self) -> None:
@@ -67,6 +68,7 @@ class SpreadsheetProfile:
     filename: str
     shape: tuple[int, int]
     columns: list[ColumnProfile]
+    sheet_count: int = 1
     empty_rows: int = 0
     duplicate_rows: int = 0
     total_cells: int = 0

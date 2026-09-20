@@ -98,7 +98,9 @@
   #drop .icon { width: 44px; height: 44px; margin: 0 auto 10px; border-radius: 12px; background: var(--brand-soft);
     display: flex; align-items: center; justify-content: center; }
   #drop-label { font-weight: 600; }
-  #drop-hint { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+  #drop-hint, #drop-scope { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+  .noticebox { background: #fff8e8; border: 1px solid #f0d9a8; color: #8a5a00; border-radius: 12px;
+    padding: 12px 16px; margin: 12px 0 4px; font-size: 0.92rem; }
   .filechip { display: none; align-items: center; gap: 10px; margin-top: 14px; background: var(--ok-soft);
     border: 1px solid #bfe6d6; border-radius: 12px; padding: 10px 14px; font-size: 0.9rem; }
   .filechip.show { display: flex; animation: rise 0.3s ease; }
@@ -253,6 +255,7 @@
         </div>
         <div id="drop-label" data-i18n="drop_idle">Drop your spreadsheet here, or click to browse</div>
         <div id="drop-hint" data-i18n="drop_hint">Excel (.xlsx) or CSV · max 25&nbsp;MB · deleted after download</div>
+        <div id="drop-scope" data-i18n="drop_scope">One sheet at a time (we clean the first) · header in row 1 · values only</div>
         <input id="file" type="file" accept=".csv,.xlsx,.xls">
       </div>
       <div class="filechip" id="filechip">
@@ -324,6 +327,8 @@ const I18N = {
     drop_idle: 'Drop your spreadsheet here, or click to browse',
     drop_ready: 'File ready — or drop a different one to replace it',
     drop_hint: 'Excel (.xlsx) or CSV · max 25 MB · deleted after download',
+    drop_scope: 'One sheet at a time (we clean the first) · header in row 1 · values only',
+    sheet_notice: '{n} sheets found — cleaning first sheet: {s}',
     st_read: 'Reading file', st_dupes: 'Detecting duplicates', st_emails: 'Checking emails',
     st_format: 'Checking formatting', st_profile: 'Profiling columns',
     btn_analyze: 'Analyze my file', btn_clean: 'Clean my spreadsheet',
@@ -373,6 +378,8 @@ const I18N = {
     drop_idle: 'Trage tabelul aici sau apasă pentru a-l alege',
     drop_ready: 'Fișier gata — sau trage altul pentru a-l înlocui',
     drop_hint: 'Excel (.xlsx) sau CSV · max 25 MB · șters după descărcare',
+    drop_scope: 'O singură foaie odată (curățăm prima) · antet pe primul rând · doar valori',
+    sheet_notice: '{n} foi găsite — curățăm prima foaie: {s}',
     st_read: 'Se citește fișierul', st_dupes: 'Se detectează duplicatele', st_emails: 'Se verifică emailurile',
     st_format: 'Se verifică formatarea', st_profile: 'Se profilează coloanele',
     btn_analyze: 'Analizează fișierul', btn_clean: 'Curăță tabelul',
@@ -592,6 +599,9 @@ function renderAnalysis(a) {
   const totalIssues = Object.values(a.issue_counts).reduce((s, v) => s + v, 0);
   const head = totalIssues === 1 ? t('found_1') : t('found_n').replace('{n}', totalIssues);
   let html = '<h2>' + esc(head) + '<span class="fname">' + esc(a.filename) + '</span></h2>';
+  if (a.sheet_count > 1) {
+    html += '<div class="noticebox">' + esc(t('sheet_notice').replace('{n}', a.sheet_count).replace('{s}', a.sheet_name || '—')) + '</div>';
+  }
   html += '<p class="lede">' + a.rows + t('scanned').replace('{c}', a.columns) + '</p>';
   html += '<div class="statgrid">';
   html += stat(a.rows, t('stat_rows'), false);

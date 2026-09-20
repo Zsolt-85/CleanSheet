@@ -77,6 +77,7 @@ def load_spreadsheet(file_path: str | Path, sheet_name: str | int | None = 0) ->
 
     file_type = path.suffix.lower().lstrip(".")
     actual_sheet_name = None
+    sheet_count = 1
 
     try:
         if file_type == "csv":
@@ -107,6 +108,10 @@ def load_spreadsheet(file_path: str | Path, sheet_name: str | int | None = 0) ->
                 first_sheet = next(iter(df))
                 df = df[first_sheet]
                 actual_sheet_name = first_sheet
+            with pd.ExcelFile(path, engine="openpyxl") as xf:
+                sheet_count = len(xf.sheet_names)
+                if isinstance(actual_sheet_name, int) and 0 <= actual_sheet_name < sheet_count:
+                    actual_sheet_name = xf.sheet_names[actual_sheet_name]
 
         else:
             raise SpreadsheetLoadError(f"Unsupported file type: {file_type}")
@@ -135,6 +140,7 @@ def load_spreadsheet(file_path: str | Path, sheet_name: str | int | None = 0) ->
         filename=path.name,
         file_type=file_type,
         sheet_name=str(actual_sheet_name) if actual_sheet_name is not None else None,
+        sheet_count=sheet_count,
     )
 
 

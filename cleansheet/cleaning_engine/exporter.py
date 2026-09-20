@@ -73,6 +73,7 @@ def export_report(
     report: ChangeReport | ChangeTracker,
     output_path: str | Path,
     index: bool = False,
+    source: SpreadsheetData | None = None,
 ) -> Path:
     """
     Export change report to Excel file with multiple sheets.
@@ -81,6 +82,9 @@ def export_report(
         report: ChangeReport or ChangeTracker
         output_path: Output file path (.xlsx)
         index: Whether to include row index
+        source: Optional source spreadsheet; when it holds more than one
+            sheet, the Summary sheet records the sheet count and the name
+            of the cleaned sheet (loud multi-sheet handling, never silent)
 
     Returns:
         Path to exported file
@@ -97,20 +101,21 @@ def export_report(
     for col in ("original", "new"):
         if col in changes_df.columns:
             changes_df[col] = changes_df[col].map(visualize_whitespace)
-    summary_data = {
-        "Metric": ["Total Changes", "Applied", "Pending Review", "Processing Time (ms)"],
-        "Value": [
-            len(report.changes),
-            len(report.get_applied_changes())
-            if hasattr(report, "get_applied_changes")
-            else sum(1 for c in report.changes if c.applied),
-            len(report.get_pending_changes())
-            if hasattr(report, "get_pending_changes")
-            else sum(1 for c in report.changes if not c.applied),
-            f"{report.processing_time_ms:.1f}",
-        ],
-    }
-    summary_df = pd.DataFrame(summary_data)
+    metrics = ["Total Changes", "Applied", "Pending Review", "Processing Time (ms)"]
+    values: list[object] = [
+        len(report.changes),
+        len(report.get_applied_changes())
+        if hasattr(report, "get_applied_changes")
+        else sum(1 for c in report.changes if c.applied),
+        len(report.get_pending_changes())
+        if hasattr(report, "get_pending_changes")
+        else sum(1 for c in report.changes if not c.applied),
+        f"{report.processing_time_ms:.1f}",
+    ]
+    if source is not None and source.sheet_count > 1:
+        metrics += ["Sheets in file", "Sheet cleaned"]
+        values += [source.sheet_count, source.sheet_name or "—"]
+    summary_df = pd.DataFrame({"Metric": metrics, "Value": values})
 
     # Rule summary
     rule_summary = []

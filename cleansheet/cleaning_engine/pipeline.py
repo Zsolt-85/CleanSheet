@@ -191,6 +191,7 @@ class CleaningPipeline:
             filename=data.filename,
             file_type=data.file_type,
             sheet_name=data.sheet_name,
+            sheet_count=data.sheet_count,
         )
 
         return cleaned_data, self.tracker
