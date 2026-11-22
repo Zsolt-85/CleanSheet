@@ -18,6 +18,7 @@
   - Audience: automotive circle (Arad 20%, Timisoara 12%; Joyson/HELLA/Meteor; 42% motor vehicle mfg) — no out-of-network signal
 - Final (export 9/12–9/18): post 346 imp / 7 eng (+15 imp, +0 eng); day3 (9/18) only 14 imp / 0 eng — FLATLINED, post declared done
 - Long tail (export 9/14–9/20): post 386 imp / 8 eng (+40 imp, +1 eng; 9/18 backfilled to 35/1, then 10/0, 9/0) — dead, tail only
+- Single-post final (export 9/24): 411 imp, 192 reached, 1 profile view, 0 follows, 7 reactions + 1 comment, 0 reposts/saves/sends, **0 link engagements**
   - Consulting 3% + Hannover 8% persist in content viewers (stable, not a blip); new margin titles: CEO 2%, Founder 1%, HR Manager 1%
   - Totals: 389 imp, 180 reached, 1341 followers (+0), 0 files
   - First hint of outside reach: Business Consulting 4% + Hannover region 9% in content viewers (new vs first export) — possibly Christian's circle if the message went out
